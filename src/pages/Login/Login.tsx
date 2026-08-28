@@ -1,13 +1,19 @@
 import { useState } from 'react';
 import { GoogleLogin, GoogleOAuthProvider } from '@react-oauth/google';
+import { useNavigate, Link } from 'react-router-dom';
+import { useAuth } from '../../context/AuthContext';
 import './Login.css';
 
 function Login() {
+  const { login } = useAuth();
+  const navigate = useNavigate();
+
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
+  const [loading, setLoading] = useState(false);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
     if (!email || !password) {
@@ -15,8 +21,16 @@ function Login() {
       return;
     }
 
-    setError('');
-    console.log('Login con:', { email, password });
+    try {
+      setError('');
+      setLoading(true);
+      await login(email, password);
+      navigate('/dashboard', { replace: true });
+    } catch (err) {
+      setError((err as Error).message);
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -45,7 +59,9 @@ function Login() {
 
           {error && <p className="login-error">{error}</p>}
 
-          <button type="submit">Entrar</button>
+          <button type="submit" disabled={loading}>
+            {loading ? 'Entrando...' : 'Entrar'}
+          </button>
 
           <GoogleLogin
             onSuccess={(credentialResponse) => {
@@ -60,6 +76,7 @@ function Login() {
                 .then((data) => {
                   localStorage.setItem('userToken', data.token);
                   // Redirigir al usuario a la página principal o a su perfil
+                  navigate('/dashboard', { replace: true });
                 })
                 .catch((error) => {
                   console.error('Error:', error);
@@ -69,7 +86,10 @@ function Login() {
               console.log('Login Failed');
             }}
           />
-          
+
+          <p style={{ textAlign: 'center', marginTop: '1rem' }}>
+            ¿No tenés cuenta? <Link to="/register">Registrate</Link>
+          </p>
         </form>
       </section>
     </GoogleOAuthProvider>
