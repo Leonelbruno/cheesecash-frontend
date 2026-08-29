@@ -1,6 +1,5 @@
 import { Navigate, Outlet } from 'react-router-dom'
-import { useAuth } from '../context/AuthContext'
-
+import { useAuth } from '../context/useAuth'
 /**
  * Rutas privadas — redirige a /login si no hay sesión válida.
  * Mientras carga la sesión inicial muestra un spinner.
