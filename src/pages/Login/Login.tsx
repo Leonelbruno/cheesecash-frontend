@@ -1,13 +1,13 @@
 import { useState } from 'react';
 import { GoogleLogin, GoogleOAuthProvider } from '@react-oauth/google';
 import { useNavigate, Link } from 'react-router-dom';
-import { useAuth } from '../../context/AuthContext';
+import { useAuth } from '../../context/useAuth';
 import './Login.css';
 import logo from '../../assets/logo.png'
 
 function Login() {
-  const { login } = useAuth();
-  const navigate = useNavigate();
+const { login, loginWithGoogle } = useAuth();
+const navigate = useNavigate();
 
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -76,28 +76,16 @@ function Login() {
           </button>
 
           <GoogleLogin
-            onSuccess={(credentialResponse) => {
-              fetch('https://cheesecash-back-production.up.railway.app/auth/google', {
-                method: 'POST',
-                headers: {
-                  'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({ token: credentialResponse.credential }),
-              })
-                .then((response) => response.json())
-                .then((data) => {
-                  localStorage.setItem('userToken', data.token);
-                  // Redirigir al usuario a la página principal o a su perfil
-                  navigate('/dashboard', { replace: true });
-                })
-                .catch((error) => {
-                  console.error('Error:', error);
-                });
-            }}
-            onError={() => {
-              console.log('Login Failed');
-            }}
-          />
+  onSuccess={(credentialResponse) => {
+    if (!credentialResponse.credential) return;
+    loginWithGoogle(credentialResponse.credential)
+      .then(() => navigate('/dashboard', { replace: true }))
+      .catch((err) => setError((err as Error).message));
+  }}
+  onError={() => {
+    setError('No se pudo iniciar sesión con Google');
+  }}
+/>
 
           <p style={{ textAlign: 'center', marginTop: '1rem' }}>
             ¿No tenés cuenta? <Link to="/register">Registrate</Link>
