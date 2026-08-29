@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { useNavigate, Link } from 'react-router-dom'
 import { useAuth } from '../../context/AuthContext'
-import '../Login/Login.css'
+import './Register.css'
 
 function Register() {
   const { register } = useAuth()
@@ -34,41 +34,54 @@ function Register() {
   }
 
   return (
-    <section className="login">
-      <form className="login-form" onSubmit={handleSubmit}>
+    <section className="register">
+      <form className="register-form" onSubmit={handleSubmit}>
         <h1>Crear cuenta</h1>
 
-        <label htmlFor="fullName">Nombre completo</label>
-        <input
-          id="fullName"
-          type="text"
-          value={fullName}
-          onChange={(e) => setFullName(e.target.value)}
-          placeholder="Juan Pérez"
-        />
+        <div className="input-group">
+          <input
+            type="text"
+            id="fullName"
+            value={fullName}
+            onChange={(e) => setFullName(e.target.value)}
+            required
+          />
+          <span className="highlight"></span>
+          <span className="bar"></span>
+          <label htmlFor="fullName">Nombre completo</label>
+        </div>
 
-        <label htmlFor="email">Email</label>
-        <input
-          id="email"
-          type="email"
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
-          placeholder="tu@email.com"
-        />
+        <div className="input-group">
+          <input
+            type="email"
+            id="email"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            required
+          />
+          <span className="highlight"></span>
+          <span className="bar"></span>
+          <label htmlFor="email">Email</label>
+        </div>
 
-        <label htmlFor="password">Contraseña</label>
-        <input
-          id="password"
-          type="password"
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
-          placeholder="••••••••"
-        />
+        <div className="input-group">
+          <input
+            type="password"
+            id="password"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            required
+          />
+          <span className="highlight"></span>
+          <span className="bar"></span>
+          <label htmlFor="password">Contraseña</label>
+        </div>
 
         {error && <p className="login-error">{error}</p>}
 
-        <button type="submit" disabled={loading}>
-          {loading ? 'Creando cuenta...' : 'Registrarse'}
+        <button type="submit" className="btn" disabled={loading}>
+          <span className="btn-text">{loading ? 'Creando cuenta...' : 'Registrarse'}</span>
+          <span className="btn-fill"></span>
         </button>
 
         <p style={{ textAlign: 'center', marginTop: '1rem' }}>

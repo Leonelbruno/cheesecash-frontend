@@ -3,6 +3,7 @@ import { GoogleLogin, GoogleOAuthProvider } from '@react-oauth/google';
 import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import './Login.css';
+import logo from '../../assets/logo.png'
 
 function Login() {
   const { login } = useAuth();
@@ -33,34 +34,45 @@ function Login() {
     }
   };
 
-  return (
+   return (
     <GoogleOAuthProvider clientId="30753237541-igvq50uek3hklqk5l0jin0sfdkd5cdne.apps.googleusercontent.com">
       <section className="login">
+        <img src={logo} alt="Cheese Cash" className="login-logo" />
+        <p className="login-subtitle">Tu billetera digital multimoneda</p>
         <form className="login-form" onSubmit={handleSubmit}>
           <h1>Iniciar sesión</h1>
 
-          <label htmlFor="email">Email</label>
-          <input
-            id="email"
-            type="email"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            placeholder="tu@email.com"
-          />
+          <div className="input-group">
+            <input 
+              type="email"
+              id="email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              required
+            />
+            <span className="highlight"></span>
+            <span className="bar"></span>
+            <label htmlFor="email">Email</label>
+          </div>
 
-          <label htmlFor="password">Contraseña</label>
-          <input
-            id="password"
-            type="password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            placeholder="••••••••"
-          />
+          <div className="input-group">
+            <input
+              type="password"
+              id="password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              required
+            />
+            <span className="highlight"></span>
+            <span className="bar"></span>
+            <label htmlFor="password">Contraseña</label>
+          </div>
 
           {error && <p className="login-error">{error}</p>}
 
-          <button type="submit" disabled={loading}>
-            {loading ? 'Entrando...' : 'Entrar'}
+          <button type="submit" className="btn" disabled={loading}>
+            <span className="btn-text">{loading ? 'Entrando...' : 'Entrar'}</span>
+            <span className="btn-fill"></span>
           </button>
 
           <GoogleLogin
