@@ -2,12 +2,12 @@ import { useState } from 'react';
 import { GoogleLogin, GoogleOAuthProvider } from '@react-oauth/google';
 import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../../context/useAuth';
+import BrandPanel, { CheeseCoin } from '../../components/BrandPanel/BrandPanel';
 import './Login.css';
-import logo from '../../assets/logo.png'
 
 function Login() {
-const { login, loginWithGoogle } = useAuth();
-const navigate = useNavigate();
+  const { login, loginWithGoogle } = useAuth();
+  const navigate = useNavigate();
 
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -34,64 +34,82 @@ const navigate = useNavigate();
     }
   };
 
-   return (
+  return (
     <GoogleOAuthProvider clientId="30753237541-igvq50uek3hklqk5l0jin0sfdkd5cdne.apps.googleusercontent.com">
-      <section className="login">
-        <img src={logo} alt="Cheese Cash" className="login-logo" />
-        <p className="login-subtitle">Tu billetera digital multimoneda</p>
-        <form className="login-form" onSubmit={handleSubmit}>
-          <h1>Iniciar sesión</h1>
+      <div className="stage">
+        <BrandPanel />
 
-          <div className="input-group">
-            <input 
-              type="email"
-              id="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              required
-            />
-            <span className="highlight"></span>
-            <span className="bar"></span>
-            <label htmlFor="email">Email</label>
+        <main className="form-panel">
+          <div className="card">
+            <div className="mobile-logo">
+              <CheeseCoin className="mark" />
+              <div className="rule" />
+              <span className="wordmark">Cheese Cash</span>
+            </div>
+
+            <div className="card-top">
+              <h2>Bienvenido de nuevo</h2>
+              <Link to="/register">¿Necesitás ayuda?</Link>
+            </div>
+
+            <form onSubmit={handleSubmit} noValidate>
+              <div className="field">
+                <label htmlFor="email">Correo</label>
+                <input
+                  id="email"
+                  type="email"
+                  placeholder="vos@ejemplo.com"
+                  autoComplete="email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  required
+                />
+              </div>
+
+              <div className="field">
+                <label htmlFor="password">Contraseña</label>
+                <input
+                  id="password"
+                  type="password"
+                  placeholder="••••••••"
+                  autoComplete="current-password"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  required
+                />
+              </div>
+
+              {error && <p className="login-error">{error}</p>}
+
+              <button type="submit" className="submit" disabled={loading}>
+                <span className="label">
+                  <CheeseCoin className="coin" />
+                  {loading ? 'Verificando…' : 'Entrar a mi cuenta'}
+                </span>
+              </button>
+            </form>
+
+            <div className="divider">o continuá con</div>
+            <div className="social-row">
+              <GoogleLogin
+                onSuccess={(credentialResponse) => {
+                  if (!credentialResponse.credential) return;
+                  loginWithGoogle(credentialResponse.credential)
+                    .then(() => navigate('/dashboard', { replace: true }))
+                    .catch((err) => setError((err as Error).message));
+                }}
+                onError={() => {
+                  setError('No se pudo iniciar sesión con Google');
+                }}
+              />
+            </div>
+
+            <p className="foot-note">
+              ¿Todavía no tenés cuenta? <Link to="/register">Crear una</Link>
+            </p>
           </div>
-
-          <div className="input-group">
-            <input
-              type="password"
-              id="password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              required
-            />
-            <span className="highlight"></span>
-            <span className="bar"></span>
-            <label htmlFor="password">Contraseña</label>
-          </div>
-
-          {error && <p className="login-error">{error}</p>}
-
-          <button type="submit" className="btn" disabled={loading}>
-            <span className="btn-text">{loading ? 'Entrando...' : 'Entrar'}</span>
-            <span className="btn-fill"></span>
-          </button>
-
-          <GoogleLogin
-  onSuccess={(credentialResponse) => {
-    if (!credentialResponse.credential) return;
-    loginWithGoogle(credentialResponse.credential)
-      .then(() => navigate('/dashboard', { replace: true }))
-      .catch((err) => setError((err as Error).message));
-  }}
-  onError={() => {
-    setError('No se pudo iniciar sesión con Google');
-  }}
-/>
-
-          <p style={{ textAlign: 'center', marginTop: '1rem' }}>
-            ¿No tenés cuenta? <Link to="/register">Registrate</Link>
-          </p>
-        </form>
-      </section>
+        </main>
+      </div>
     </GoogleOAuthProvider>
   );
 }
