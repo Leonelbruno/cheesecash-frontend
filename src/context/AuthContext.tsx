@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { api } from '../services/api'
-import { AuthContext, type User } from './auth-context' 
+import { AuthContext, type User } from './auth-context'
 
 const TOKEN_KEY = 'cc_token'
 
@@ -50,14 +50,16 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     setUser(user)
   }
 
-  async function register(email: string, password: string, fullName: string) {
-    const { token, user } = await api.post<{ token: string; user: User }>(
+  async function register(
+    email: string,
+    password: string,
+    fullName: string,
+  ) {
+    await api.post<User>(
       '/auth/register',
       { email, password, fullName },
       { auth: false },
     )
-    localStorage.setItem(TOKEN_KEY, token)
-    setUser(user)
   }
 
   function logout() {

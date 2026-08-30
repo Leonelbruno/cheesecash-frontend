@@ -27,7 +27,7 @@ function Register() {
       setError('')
       setLoading(true)
       await register(email, password, fullName)
-      navigate('/dashboard', { replace: true })
+      navigate('/login', { replace: true })
     } catch (err) {
       setError((err as Error).message)
     } finally {
