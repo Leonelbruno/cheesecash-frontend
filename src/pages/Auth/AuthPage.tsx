@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 import { useLocation, useNavigate } from 'react-router-dom'
-import { useAuth } from '../../context/AuthContext'
+import { useAuth } from '../../context/useAuth'
+import Toast from '../../components/Toast/Toast'
 import './AuthPage.css'
 
 /* ── SVG gradients (shared trick: invisible svg con defs) ── */
@@ -127,6 +128,7 @@ export default function AuthPage() {
   const [password, setPassword] = useState('')
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
+  const [toast, setToast] = useState<string | null>(null)
 
   // reset error when switching tabs
   const switchTo = (tab: 'login' | 'register') => {
@@ -148,10 +150,13 @@ export default function AuthPage() {
       setLoading(true)
       if (isRegister) {
         await register(email, password, name)
+        await login(email, password)
+        setToast('¡Usuario creado con éxito!')
+        setTimeout(() => navigate('/dashboard', { replace: true }), 4000)
       } else {
         await login(email, password)
+        navigate('/dashboard', { replace: true })
       }
-      navigate('/dashboard', { replace: true })
     } catch (err) {
       setError((err as Error).message)
     } finally {
@@ -161,6 +166,7 @@ export default function AuthPage() {
 
   return (
     <>
+      {toast && <Toast message={toast} onClose={() => setToast(null)} />}
       <CoinDefs />
       <div className="stage">
 
