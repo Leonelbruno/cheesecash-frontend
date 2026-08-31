@@ -1,21 +1,6 @@
-import { createContext, useContext, useEffect, useState } from 'react'
+import { useEffect, useState } from 'react'
 import { api } from '../services/api'
-
-interface User {
-  id: number
-  email: string
-  fullName: string
-}
-
-interface AuthContextType {
-  user: User | null
-  loading: boolean
-  login: (email: string, password: string) => Promise<void>
-  register: (email: string, password: string, fullName: string) => Promise<void>
-  logout: () => void
-}
-
-const AuthContext = createContext<AuthContextType | null>(null)
+import { AuthContext, type User } from './auth-context'
 
 const TOKEN_KEY = 'cc_token'
 
@@ -25,17 +10,24 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   // Al montar: validar token existente con /api/users/me
   useEffect(() => {
-    const token = localStorage.getItem(TOKEN_KEY)
-    if (!token) {
-      setLoading(false)
-      return
+    async function loadUser() {
+      const token = localStorage.getItem(TOKEN_KEY)
+      if (!token) {
+        setLoading(false)
+        return
+      }
+
+      try {
+        const me = await api.get<User>('/users/me')
+        setUser(me)
+      } catch {
+        localStorage.removeItem(TOKEN_KEY)
+      } finally {
+        setLoading(false)
+      }
     }
 
-    api
-      .get<User>('/users/me')
-      .then((me) => setUser(me))
-      .catch(() => localStorage.removeItem(TOKEN_KEY))
-      .finally(() => setLoading(false))
+    loadUser()
   }, [])
 
   async function login(email: string, password: string) {
@@ -48,14 +40,26 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     setUser(user)
   }
 
-  async function register(email: string, password: string, fullName: string) {
+  async function loginWithGoogle(googleToken: string) {
     const { token, user } = await api.post<{ token: string; user: User }>(
-      '/auth/register',
-      { email, password, fullName },
+      '/auth/google',
+      { token: googleToken },
       { auth: false },
     )
     localStorage.setItem(TOKEN_KEY, token)
     setUser(user)
+  }
+
+  async function register(
+    email: string,
+    password: string,
+    fullName: string,
+  ) {
+    await api.post<User>(
+      '/auth/register',
+      { email, password, fullName },
+      { auth: false },
+    )
   }
 
   function logout() {
@@ -64,14 +68,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }
 
   return (
-    <AuthContext.Provider value={{ user, loading, login, register, logout }}>
+    <AuthContext.Provider value={{ user, loading, login, loginWithGoogle, register, logout }}>
       {children}
     </AuthContext.Provider>
   )
-}
-
-export function useAuth() {
-  const ctx = useContext(AuthContext)
-  if (!ctx) throw new Error('useAuth debe usarse dentro de AuthProvider')
-  return ctx
 }
