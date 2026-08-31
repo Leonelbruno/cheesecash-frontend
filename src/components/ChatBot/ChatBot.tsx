@@ -25,45 +25,105 @@ const BOT_ANSWERS: Record<string, string> = {
     'Todos los saldos son ficticios y solo para uso dentro de la plataforma. Tus datos están protegidos con JWT y conexiones seguras.',
 }
 
+const FAB   = 56
+const GAP   = 12
+const MARGIN = 16
+
 let msgId = 0
 
 export default function ChatBot() {
-  const [open, setOpen] = useState(false)
+  const [open, setOpen]       = useState(false)
+  const [pos, setPos]         = useState({ x: 0, y: 0 })
+  const [ready, setReady]     = useState(false)
   const [messages, setMessages] = useState<Message[]>([
     { id: ++msgId, from: 'bot', text: '¡Hola! Soy el asistente de Cheese Cash. ¿En qué puedo ayudarte hoy?' },
   ])
-  const [input, setInput] = useState('')
-  const [typing, setTyping] = useState(false)
-  const bottomRef = useRef<HTMLDivElement>(null)
+  const [input, setInput]     = useState('')
+  const [typing, setTyping]   = useState(false)
+  const bottomRef             = useRef<HTMLDivElement>(null)
 
+  /* posición inicial: esquina inferior derecha */
+  useEffect(() => {
+    setPos({
+      x: window.innerWidth  - FAB - MARGIN,
+      y: window.innerHeight - FAB - MARGIN,
+    })
+    setReady(true)
+  }, [])
+
+  /* scroll al último mensaje */
   useEffect(() => {
     if (open) bottomRef.current?.scrollIntoView({ behavior: 'smooth' })
   }, [messages, open])
 
+  /* ── Drag logic ── */
+  const dragging   = useRef(false)
+  const hasDragged = useRef(false)
+  const startPtr   = useRef({ x: 0, y: 0 })
+  const startPos   = useRef({ x: 0, y: 0 })
+
+  function onPointerDown(e: React.PointerEvent<HTMLButtonElement>) {
+    dragging.current   = true
+    hasDragged.current = false
+    startPtr.current   = { x: e.clientX, y: e.clientY }
+    startPos.current   = { ...pos }
+    e.currentTarget.setPointerCapture(e.pointerId)
+  }
+
+  function onPointerMove(e: React.PointerEvent<HTMLButtonElement>) {
+    if (!dragging.current) return
+    const dx = e.clientX - startPtr.current.x
+    const dy = e.clientY - startPtr.current.y
+    if (Math.abs(dx) > 4 || Math.abs(dy) > 4) hasDragged.current = true
+    setPos({
+      x: Math.min(Math.max(0, startPos.current.x + dx), window.innerWidth  - FAB),
+      y: Math.min(Math.max(0, startPos.current.y + dy), window.innerHeight - FAB),
+    })
+  }
+
+  function onPointerUp() {
+    dragging.current = false
+    if (!hasDragged.current) setOpen(v => !v)
+  }
+
+  /* ── Panel position (encima o debajo según espacio) ── */
+  const panelW  = 360
+  const panelH  = 500
+  const panelLeft = Math.min(
+    Math.max(MARGIN, pos.x + FAB - panelW),
+    window.innerWidth - panelW - MARGIN,
+  )
+  const spaceAbove = pos.y
+  const panelTop   = spaceAbove >= panelH + GAP
+    ? pos.y - panelH - GAP
+    : pos.y + FAB + GAP
+
+  /* ── Mensajes ── */
   function sendMessage(text: string) {
     if (!text.trim()) return
-
-    const userMsg: Message = { id: ++msgId, from: 'user', text: text.trim() }
-    setMessages((prev) => [...prev, userMsg])
+    setMessages(prev => [...prev, { id: ++msgId, from: 'user', text: text.trim() }])
     setInput('')
     setTyping(true)
-
     setTimeout(() => {
       const reply =
         BOT_ANSWERS[text.trim()] ??
         'Anotado. Por ahora puedo ayudarte con preguntas sobre cómo usar la plataforma. Estamos trabajando para que el asistente responda más consultas pronto.'
-
       setTyping(false)
-      setMessages((prev) => [...prev, { id: ++msgId, from: 'bot', text: reply }])
+      setMessages(prev => [...prev, { id: ++msgId, from: 'bot', text: reply }])
     }, 900)
   }
 
+  if (!ready) return null
+
   return (
     <>
-      {/* Botón flotante */}
+      {/* ── FAB arrastrable ── */}
       <button
         className="chat-fab"
-        onClick={() => setOpen((v) => !v)}
+        style={{ left: pos.x, top: pos.y, bottom: 'auto', right: 'auto', cursor: dragging.current ? 'grabbing' : 'grab' }}
+        onPointerDown={onPointerDown}
+        onPointerMove={onPointerMove}
+        onPointerUp={onPointerUp}
         aria-label="Abrir asistente"
         title="Asistente Cheese Cash"
       >
@@ -75,10 +135,12 @@ export default function ChatBot() {
         </svg>
       </button>
 
-      {/* Panel de chat */}
+      {/* ── Panel de chat ── */}
       {open && (
-        <div className="chat-panel">
-
+        <div
+          className="chat-panel"
+          style={{ left: panelLeft, top: panelTop, bottom: 'auto', right: 'auto' }}
+        >
           {/* Header */}
           <div className="chat-header">
             <div className="chat-header-info">
@@ -135,7 +197,6 @@ export default function ChatBot() {
               </svg>
             </button>
           </div>
-
         </div>
       )}
     </>
