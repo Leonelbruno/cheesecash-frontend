@@ -1,16 +1,20 @@
 import { useAuth } from '../../context/AuthContext'
 
 function Dashboard() {
-  const { user, logout } = useAuth()
+  const { user } = useAuth()
 
   return (
-    <main style={{ padding: '2rem' }}>
-      <h1>Bienvenido, {user?.fullName} 👋</h1>
-      <p>Tu billetera está lista. Próximamente: balances y operaciones.</p>
-      <button onClick={logout} style={{ marginTop: '1rem' }}>
-        Cerrar sesión
-      </button>
-    </main>
+    <div style={{ padding: '2rem' }}>
+      <p style={{ color: '#9a927f', fontSize: 13, fontFamily: 'JetBrains Mono, monospace', textTransform: 'uppercase', letterSpacing: 2 }}>
+        Bienvenido de vuelta
+      </p>
+      <h1 style={{ fontFamily: 'Poppins, sans-serif', fontSize: 28, fontWeight: 700, marginTop: 6, color: '#f6efdf' }}>
+        Hola, {user?.fullName?.split(' ')[0]} 👋
+      </h1>
+      <p style={{ color: '#9a927f', marginTop: 16 }}>
+        Próximamente: balances, operaciones y más.
+      </p>
+    </div>
   )
 }
 
