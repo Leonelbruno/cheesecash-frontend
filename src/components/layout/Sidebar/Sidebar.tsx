@@ -1,3 +1,14 @@
+import { NavLink } from 'react-router-dom'
+import {
+    House,
+    WalletCards,
+    History,
+    ArrowLeftRight,
+    MessageSquare,
+    LogOut,
+} from 'lucide-react'
+
+import { CheeseCoin } from '../../BrandPanel/BrandPanel'
 import './Sidebar.css'
 
 interface SidebarProps {
@@ -10,40 +21,50 @@ function Sidebar({ userName, onLogout }: SidebarProps) {
 
     return (
         <aside className="sidebar">
-            <div className="sidebar-logo">
-                <span className="sidebar-logo-icon">🧀</span>
+            <NavLink to="/dashboard" className="sidebar-logo">
+                <CheeseCoin className="sidebar-logo-icon" />
 
                 <span>
                     Cheese
                     <br />
                     Cash
                 </span>
-            </div>
+            </NavLink>
 
             <nav className="sidebar-nav">
-                <button className="sidebar-nav-item active">
-                    <span>⌂</span>
-                    Home
+                <NavLink
+                    to="/dashboard"
+                    className={({ isActive }) =>
+                        `sidebar-nav-item ${isActive ? 'active' : ''}`
+                    }
+                >
+                    <House size={20} />
+                    <span>Home</span>
+                </NavLink>
+
+                <NavLink
+                    to="/wallet"
+                    className={({ isActive }) =>
+                        `sidebar-nav-item ${isActive ? 'active' : ''}`
+                    }
+                >
+                    <WalletCards size={20} />
+                    <span>Operar</span>
+                </NavLink>
+
+                <button className="sidebar-nav-item" disabled>
+                    <History size={20} />
+                    <span>Historial</span>
                 </button>
 
-                <button className="sidebar-nav-item">
-                    <span>$</span>
-                    Operar
+                <button className="sidebar-nav-item" disabled>
+                    <ArrowLeftRight size={20} />
+                    <span>Conversor</span>
                 </button>
 
-                <button className="sidebar-nav-item">
-                    <span>◷</span>
-                    Historial
-                </button>
-
-                <button className="sidebar-nav-item">
-                    <span>⇄</span>
-                    Conversor
-                </button>
-
-                <button className="sidebar-nav-item">
-                    <span>▢</span>
-                    Chatbot
+                <button className="sidebar-nav-item" disabled>
+                    <MessageSquare size={20} />
+                    <span>Chatbot</span>
                 </button>
             </nav>
 
@@ -60,7 +81,7 @@ function Sidebar({ userName, onLogout }: SidebarProps) {
                     onClick={onLogout}
                     title="Cerrar sesión"
                 >
-                    ↪
+                    <LogOut size={18} />
                 </button>
             </div>
         </aside>

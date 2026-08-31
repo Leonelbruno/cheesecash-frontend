@@ -1,6 +1,7 @@
 import { useAuth } from '../../context/useAuth'
 import './Dashboard.css'
 import Sidebar from '../../components/layout/Sidebar/Sidebar'
+import { ShoppingBag, ArrowUpFromLine, ArrowLeftRight, Calculator, Send, CircleDollarSign } from 'lucide-react'
 
 const balances = [
   {
@@ -38,11 +39,11 @@ const balances = [
 ]
 
 const quickActions = [
-  { label: 'Comprar', icon: '💰' },
-  { label: 'Vender', icon: '📤' },
-  { label: 'Intercambiar', icon: '🔄' },
-  { label: 'Conversor', icon: '🔢' },
-  { label: 'Transferir', icon: '📲' },
+  { label: 'Comprar', icon: ShoppingBag },
+  { label: 'Vender', icon: ArrowUpFromLine },
+  { label: 'Intercambiar', icon: ArrowLeftRight },
+  { label: 'Conversor', icon: Calculator },
+  { label: 'Transferir', icon: Send },
 ]
 
 const transactions = [
@@ -83,7 +84,7 @@ function Dashboard() {
 
   return (
     <div className="dashboard">
-      
+
       <Sidebar userName={userName} onLogout={logout} />
 
       <div className="dashboard-mobile-bar">
@@ -160,12 +161,16 @@ function Dashboard() {
           <h2 className="dashboard-section-title">Accesos rápidos</h2>
 
           <div className="quick-actions">
-            {quickActions.map((action) => (
-              <button className="quick-action" key={action.label}>
-                <span>{action.icon}</span>
-                <strong>{action.label}</strong>
-              </button>
-            ))}
+            {quickActions.map((action) => {
+              const Icon = action.icon
+
+              return (
+                <button className="quick-action" key={action.label}>
+                  <Icon size={24} />
+                  <strong>{action.label}</strong>
+                </button>
+              )
+            })}
           </div>
         </section>
 

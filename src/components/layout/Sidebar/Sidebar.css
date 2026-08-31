@@ -136,3 +136,20 @@
     cursor: pointer;
   }
 }
+
+.sidebar-logo {
+  text-decoration: none;
+}
+
+.sidebar-nav-item {
+  text-decoration: none;
+}
+
+.sidebar-nav-item:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.sidebar-nav-item svg {
+  flex-shrink: 0;
+}
