@@ -2,6 +2,7 @@ import { useAuth } from '../../context/useAuth'
 import './Dashboard.css'
 import Sidebar from '../../components/layout/Sidebar/Sidebar'
 import { ShoppingBag, ArrowUpFromLine, ArrowLeftRight, Calculator, Send, CircleDollarSign } from 'lucide-react'
+import { CheeseCoin } from '../../components/BrandPanel/BrandPanel'
 
 const balances = [
   {
@@ -88,10 +89,9 @@ function Dashboard() {
       <Sidebar userName={userName} onLogout={logout} />
 
       <div className="dashboard-mobile-bar">
-        <button className="dashboard-menu-button">☰</button>
 
         <div className="dashboard-mobile-logo">
-          <span>🧀</span>
+          <CheeseCoin className="dashboard-mobile-logo-icon" />
           <strong>Cheese Cash</strong>
         </div>
 
@@ -185,36 +185,36 @@ function Dashboard() {
 
           <div className="transaction-list">
             {transactions.map((transaction) => {
-  const Icon = transaction.icon
+              const Icon = transaction.icon
 
-  return (
-    <article
-      className="transaction-card"
-      key={transaction.id}
-    >
-      <div className="transaction-left">
-        <div className="transaction-icon">
-          <Icon size={18} />
-        </div>
+              return (
+                <article
+                  className="transaction-card"
+                  key={transaction.id}
+                >
+                  <div className="transaction-left">
+                    <div className="transaction-icon">
+                      <Icon size={18} />
+                    </div>
 
-        <div>
-          <span
-            className={`transaction-type ${transaction.className}`}
-          >
-            {transaction.type}
-          </span>
+                    <div>
+                      <span
+                        className={`transaction-type ${transaction.className}`}
+                      >
+                        {transaction.type}
+                      </span>
 
-          <p>{transaction.detail}</p>
-        </div>
-      </div>
+                      <p>{transaction.detail}</p>
+                    </div>
+                  </div>
 
-      <div className="transaction-values">
-        <strong>{transaction.result}</strong>
-        <span>{transaction.amount}</span>
-      </div>
-    </article>
-  )
-})}
+                  <div className="transaction-values">
+                    <strong>{transaction.result}</strong>
+                    <span>{transaction.amount}</span>
+                  </div>
+                </article>
+              )
+            })}
           </div>
         </section>
       </main>
