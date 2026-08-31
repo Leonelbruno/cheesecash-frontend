@@ -50,7 +50,7 @@ const transactions = [
   {
     id: 1,
     type: 'Compra',
-    icon: '💰',
+    icon: CircleDollarSign,
     detail: 'ARS → USD · 26 ago 2026',
     result: '52.50 USD',
     amount: '50.000 ARS',
@@ -59,7 +59,7 @@ const transactions = [
   {
     id: 2,
     type: 'Intercambio',
-    icon: '🔄',
+    icon: ArrowLeftRight,
     detail: 'USD → EUR · 25 ago 2026',
     result: '92.40 EUR',
     amount: '100 USD',
@@ -68,7 +68,7 @@ const transactions = [
   {
     id: 3,
     type: 'Venta',
-    icon: '📤',
+    icon: ArrowUpFromLine,
     detail: 'BTC → ARS · 24 ago 2026',
     result: '4.820 ARS',
     amount: '0.001 BTC',
@@ -184,33 +184,37 @@ function Dashboard() {
           </div>
 
           <div className="transaction-list">
-            {transactions.map((transaction) => (
-              <article
-                className="transaction-card"
-                key={transaction.id}
-              >
-                <div className="transaction-left">
-                  <div className="transaction-icon">
-                    {transaction.icon}
-                  </div>
+            {transactions.map((transaction) => {
+  const Icon = transaction.icon
 
-                  <div>
-                    <span
-                      className={`transaction-type ${transaction.className}`}
-                    >
-                      {transaction.type}
-                    </span>
+  return (
+    <article
+      className="transaction-card"
+      key={transaction.id}
+    >
+      <div className="transaction-left">
+        <div className="transaction-icon">
+          <Icon size={18} />
+        </div>
 
-                    <p>{transaction.detail}</p>
-                  </div>
-                </div>
+        <div>
+          <span
+            className={`transaction-type ${transaction.className}`}
+          >
+            {transaction.type}
+          </span>
 
-                <div className="transaction-values">
-                  <strong>{transaction.result}</strong>
-                  <span>{transaction.amount}</span>
-                </div>
-              </article>
-            ))}
+          <p>{transaction.detail}</p>
+        </div>
+      </div>
+
+      <div className="transaction-values">
+        <strong>{transaction.result}</strong>
+        <span>{transaction.amount}</span>
+      </div>
+    </article>
+  )
+})}
           </div>
         </section>
       </main>

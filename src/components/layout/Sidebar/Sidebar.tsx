@@ -4,7 +4,6 @@ import {
     WalletCards,
     History,
     ArrowLeftRight,
-    MessageSquare,
     LogOut,
 } from 'lucide-react'
 
@@ -61,11 +60,7 @@ function Sidebar({ userName, onLogout }: SidebarProps) {
                     <ArrowLeftRight size={20} />
                     <span>Conversor</span>
                 </button>
-
-                <button className="sidebar-nav-item" disabled>
-                    <MessageSquare size={20} />
-                    <span>Chatbot</span>
-                </button>
+                
             </nav>
 
             <div className="sidebar-user">
