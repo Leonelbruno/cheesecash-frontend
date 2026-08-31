@@ -1,4 +1,4 @@
-/* ── Variables (mismas del auth) ── */
+/* ── Variables ── */
 :root {
   --bg: #0a0908;
   --panel: #0d0b09;
@@ -20,6 +20,33 @@
   font-family: 'Inter', sans-serif;
 }
 
+/* ── Hamburger (solo mobile) ── */
+.hamburger {
+  display: none;
+  position: fixed;
+  top: 16px;
+  left: 16px;
+  z-index: 50;
+  width: 40px;
+  height: 40px;
+  align-items: center;
+  justify-content: center;
+  background: var(--panel);
+  border: 1px solid var(--card-border);
+  border-radius: 10px;
+  color: var(--muted);
+  cursor: pointer;
+}
+
+/* ── Overlay (mobile) ── */
+.sidebar-overlay {
+  display: none;
+  position: fixed;
+  inset: 0;
+  z-index: 30;
+  background: rgba(10, 9, 8, 0.75);
+}
+
 /* ── Sidebar ── */
 .sidebar {
   width: 220px;
@@ -33,27 +60,39 @@
   position: sticky;
   top: 0;
   height: 100vh;
+  transition: transform 0.3s ease;
 }
 
 /* logo */
 .sidebar-logo {
   display: flex;
   align-items: center;
-  gap: 12px;
-  padding: 0 20px 28px;
+  gap: 10px;
+  padding: 0 20px 24px;
   border-bottom: 1px solid var(--card-border);
 }
-.sidebar-logo .mark {
-  width: 34px;
-  height: 34px;
+
+/* divisor vertical entre moneda y texto */
+.logo-divider {
+  width: 1.5px;
+  height: 24px;
+  background: linear-gradient(to bottom, transparent, var(--gold-2), transparent);
   flex-shrink: 0;
-  filter: drop-shadow(0 3px 8px rgba(217, 169, 66, 0.3));
 }
-.sidebar-logo .wordmark {
+
+.wordmark {
   font-family: 'Poppins', sans-serif;
   font-weight: 700;
-  font-size: 17px;
+  font-size: 16px;
   color: var(--cream);
+}
+
+/* texto dorado degradado */
+.wordmark--gradient {
+  background: linear-gradient(135deg, var(--gold-1) 0%, var(--gold-2) 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
 }
 
 /* nav links */
@@ -74,9 +113,9 @@
   color: var(--muted);
   font-size: 14px;
   font-weight: 500;
-  transition: background 0.15s, color 0.15s;
+  transition: background 0.15s, color 0.15s, border-color 0.15s;
   cursor: pointer;
-  border: none;
+  border: 1px solid transparent;
   background: none;
   width: 100%;
   text-align: left;
@@ -87,14 +126,16 @@
   color: var(--cream);
 }
 .nav-link.active {
-  background: linear-gradient(135deg, rgba(242, 212, 136, 0.15), rgba(217, 169, 66, 0.08));
+  background: linear-gradient(135deg, rgba(242, 212, 136, 0.13), rgba(217, 169, 66, 0.08));
   color: var(--gold-1);
-  border: 1px solid rgba(242, 212, 136, 0.15);
+  border-color: rgba(232, 196, 104, 0.22);
+  font-weight: 600;
 }
 .nav-icon {
-  font-size: 17px;
   width: 20px;
-  text-align: center;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   flex-shrink: 0;
 }
 
@@ -122,7 +163,7 @@
   justify-content: center;
   font-family: 'Poppins', sans-serif;
   font-weight: 700;
-  font-size: 14px;
+  font-size: 13px;
   color: #161311;
   flex-shrink: 0;
 }
@@ -133,10 +174,10 @@
 }
 .user-info .user-plan {
   font-size: 10px;
-  color: var(--gold-1);
+  color: var(--gold-2);
   font-family: 'JetBrains Mono', monospace;
   text-transform: uppercase;
-  letter-spacing: 0.5px;
+  letter-spacing: 0.08em;
 }
 
 /* logout button */
@@ -144,12 +185,12 @@
   display: flex;
   align-items: center;
   gap: 10px;
-  padding: 10px 12px;
+  padding: 9px 12px;
   border-radius: 10px;
   border: none;
   background: none;
   color: var(--muted);
-  font-size: 13.5px;
+  font-size: 13px;
   font-family: 'Inter', sans-serif;
   font-weight: 500;
   cursor: pointer;
@@ -177,31 +218,26 @@
   max-width: 720px;
 }
 
-/* ── Responsive: sidebar colapsada en mobile ── */
+/* ── Responsive mobile ── */
 @media (max-width: 768px) {
+  .hamburger {
+    display: flex;
+  }
+  .sidebar-overlay {
+    display: block;
+  }
   .sidebar {
-    width: 60px;
+    position: fixed;
+    top: 0;
+    left: 0;
+    height: 100%;
+    z-index: 40;
+    transform: translateX(-100%);
   }
-  .sidebar-logo .wordmark,
-  .nav-link span:not(.nav-icon),
-  .user-info,
-  .btn-logout span:not(.nav-icon) {
-    display: none;
+  .sidebar--open {
+    transform: translateX(0);
   }
-  .sidebar-logo {
-    justify-content: center;
-    padding: 0 0 28px;
-  }
-  .nav-link {
-    justify-content: center;
-    padding: 12px;
-  }
-  .sidebar-user {
-    justify-content: center;
-    padding: 8px;
-  }
-  .btn-logout {
-    justify-content: center;
-    padding: 12px;
+  .main-content {
+    padding: 72px 20px 40px;
   }
 }
