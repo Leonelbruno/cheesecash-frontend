@@ -1,4 +1,3 @@
-import { useState } from 'react'
 import { NavLink, Outlet, useNavigate } from 'react-router-dom'
 import { useAuth } from '../../context/useAuth'
 import './Layout.css'
@@ -34,7 +33,7 @@ function CheeseCoin({ size = 34 }: { size?: number }) {
 /* ── SVG Icons ── */
 function IconHome({ active }: { active: boolean }) {
   return (
-    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={active ? 2 : 1.8} strokeLinecap="round" strokeLinejoin="round">
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={active ? 2.2 : 1.8} strokeLinecap="round" strokeLinejoin="round">
       <path d="M3 9.5L12 3l9 6.5V20a1 1 0 01-1 1H5a1 1 0 01-1-1V9.5z"/>
       <polyline points="9 21 9 13 15 13 15 21"/>
     </svg>
@@ -42,7 +41,7 @@ function IconHome({ active }: { active: boolean }) {
 }
 function IconOperar({ active }: { active: boolean }) {
   return (
-    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={active ? 2 : 1.8} strokeLinecap="round" strokeLinejoin="round">
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={active ? 2.2 : 1.8} strokeLinecap="round" strokeLinejoin="round">
       <line x1="12" y1="2" x2="12" y2="22"/>
       <path d="M17 5H9.5a3.5 3.5 0 000 7h5a3.5 3.5 0 010 7H6"/>
     </svg>
@@ -50,7 +49,7 @@ function IconOperar({ active }: { active: boolean }) {
 }
 function IconHistorial({ active }: { active: boolean }) {
   return (
-    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={active ? 2 : 1.8} strokeLinecap="round" strokeLinejoin="round">
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={active ? 2.2 : 1.8} strokeLinecap="round" strokeLinejoin="round">
       <circle cx="12" cy="12" r="10"/>
       <polyline points="12 6 12 12 16 14"/>
     </svg>
@@ -58,7 +57,7 @@ function IconHistorial({ active }: { active: boolean }) {
 }
 function IconConversor({ active }: { active: boolean }) {
   return (
-    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={active ? 2 : 1.8} strokeLinecap="round" strokeLinejoin="round">
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={active ? 2.2 : 1.8} strokeLinecap="round" strokeLinejoin="round">
       <polyline points="17 1 21 5 17 9"/>
       <path d="M3 11V9a4 4 0 014-4h14"/>
       <polyline points="7 23 3 19 7 15"/>
@@ -68,7 +67,7 @@ function IconConversor({ active }: { active: boolean }) {
 }
 function IconTransferir({ active }: { active: boolean }) {
   return (
-    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={active ? 2 : 1.8} strokeLinecap="round" strokeLinejoin="round">
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={active ? 2.2 : 1.8} strokeLinecap="round" strokeLinejoin="round">
       <line x1="22" y1="2" x2="11" y2="13"/>
       <polygon points="22 2 15 22 11 13 2 9 22 2"/>
     </svg>
@@ -83,15 +82,6 @@ function IconLogout() {
     </svg>
   )
 }
-function IconMenu() {
-  return (
-    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
-      <line x1="3" y1="6"  x2="21" y2="6"/>
-      <line x1="3" y1="12" x2="21" y2="12"/>
-      <line x1="3" y1="18" x2="21" y2="18"/>
-    </svg>
-  )
-}
 
 const NAV_ITEMS = [
   { to: '/dashboard', label: 'Home',       Icon: IconHome },
@@ -101,10 +91,31 @@ const NAV_ITEMS = [
   { to: '/transferir',label: 'Transferir', Icon: IconTransferir },
 ]
 
+/* ── Bottom nav (solo mobile) ── */
+function BottomNav() {
+  return (
+    <nav className="bottom-nav">
+      {NAV_ITEMS.map(({ to, label, Icon }) => (
+        <NavLink
+          key={to}
+          to={to}
+          className={({ isActive }) => `bottom-nav-item${isActive ? ' active' : ''}`}
+        >
+          {({ isActive }) => (
+            <>
+              <span className="bottom-nav-icon"><Icon active={isActive} /></span>
+              <span className="bottom-nav-label">{label}</span>
+            </>
+          )}
+        </NavLink>
+      ))}
+    </nav>
+  )
+}
+
 export default function Layout() {
   const { user, logout } = useAuth()
   const navigate = useNavigate()
-  const [sidebarOpen, setSidebarOpen] = useState(false)
 
   const handleLogout = () => {
     logout()
@@ -118,17 +129,8 @@ export default function Layout() {
   return (
     <div className="app-shell">
 
-      {/* Hamburger (mobile) */}
-      <button className="hamburger" onClick={() => setSidebarOpen(true)} aria-label="Abrir menú">
-        <IconMenu />
-      </button>
-
-      {/* Overlay (mobile) */}
-      {sidebarOpen && (
-        <div className="sidebar-overlay" onClick={() => setSidebarOpen(false)} />
-      )}
-
-      <aside className={`sidebar${sidebarOpen ? ' sidebar--open' : ''}`}>
+      {/* Sidebar (desktop) */}
+      <aside className="sidebar">
 
         {/* Logo */}
         <div className="sidebar-logo">
@@ -143,7 +145,6 @@ export default function Layout() {
             <NavLink
               key={to}
               to={to}
-              onClick={() => setSidebarOpen(false)}
               className={({ isActive }) => `nav-link${isActive ? ' active' : ''}`}
             >
               {({ isActive }) => (
@@ -178,6 +179,10 @@ export default function Layout() {
       <main className="main-content">
         <Outlet />
       </main>
+
+      {/* Bottom nav (solo mobile) */}
+      <BottomNav />
+
     </div>
   )
 }
