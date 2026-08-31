@@ -4,7 +4,6 @@ import { ProtectedRoute, PublicRoute } from './components/ProtectedRoute'
 import Layout from './components/Layout/Layout'
 import AuthPage from './pages/Auth/AuthPage'
 import Dashboard from './pages/Dashboard/Dashboard'
-import Wallet from './pages/Wallet/Wallet'
 import ChatBot from './components/ChatBot/ChatBot'
 
 function App() {
@@ -23,7 +22,6 @@ function App() {
         <Route element={<ProtectedRoute />}>
           <Route element={<Layout />}>
             <Route path="/dashboard"  element={<Dashboard />} />
-            <Route path="/wallet"     element={<Wallet />} />
             <Route path="/operar"     element={<Dashboard />} />
             <Route path="/historial"  element={<Dashboard />} />
             <Route path="/conversor"  element={<Dashboard />} />
