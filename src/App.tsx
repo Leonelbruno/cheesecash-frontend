@@ -4,6 +4,10 @@ import { ProtectedRoute, PublicRoute } from './components/ProtectedRoute'
 import Layout from './components/Layout/Layout'
 import AuthPage from './pages/Auth/AuthPage'
 import Dashboard from './pages/Dashboard/Dashboard'
+import Operar from './pages/Operar/Operar'
+import Historial from './pages/Historial/Historial'
+import Conversor from './pages/Conversor/Conversor'
+import Transferir from './pages/Transferir/Transferir'
 import ChatBot from './components/ChatBot/ChatBot'
 
 function App() {
@@ -22,10 +26,10 @@ function App() {
         <Route element={<ProtectedRoute />}>
           <Route element={<Layout />}>
             <Route path="/dashboard"  element={<Dashboard />} />
-            <Route path="/operar"     element={<Dashboard />} />
-            <Route path="/historial"  element={<Dashboard />} />
-            <Route path="/conversor"  element={<Dashboard />} />
-            <Route path="/transferir" element={<Dashboard />} />
+            <Route path="/operar"     element={<Operar />} />
+            <Route path="/historial"  element={<Historial />} />
+            <Route path="/conversor"  element={<Conversor />} />
+            <Route path="/transferir" element={<Transferir />} />
           </Route>
         </Route>
 
