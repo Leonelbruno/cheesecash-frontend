@@ -150,9 +150,8 @@ export default function AuthPage() {
       setLoading(true)
       if (isRegister) {
         await register(email, password, name)
-        await login(email, password)
         setToast('¡Usuario creado con éxito!')
-        setTimeout(() => navigate('/dashboard', { replace: true }), 4000)
+        setTimeout(() => navigate('/login', { replace: true }), 4000)
       } else {
         await login(email, password)
         navigate('/dashboard', { replace: true })
