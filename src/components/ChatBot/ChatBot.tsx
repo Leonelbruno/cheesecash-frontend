@@ -18,9 +18,9 @@ const BOT_ANSWERS: Record<string, string> = {
   '¿Cómo compro monedas?':
     'En el dashboard vas a ver tu billetera. Elegís la moneda que querés comprar, indicás el monto y confirmás. La tasa de cambio se aplica en tiempo real.',
   '¿Qué tipo de cambio hay?':
-    'Usamos tasas reales de APIs externas (ExchangeRate-API y CoinGecko). Las tasas se actualizan cada 15 minutos.',
+    'Podés ver las tasas de cambio disponibles en la sección Conversor. Las cotizaciones corresponden a las monedas soportadas: ARS, USD, EUR y BTC.',
   '¿Cómo funciona el intercambio?':
-    'Podés convertir entre ARS, USD, EUR y BTC directamente desde tu billetera. El saldo se actualiza al instante y recibís un email de confirmación.',
+    'Podés convertir entre ARS, USD, EUR y BTC directamente desde tu billetera. El saldo se actualiza una vez confirmada la operación.',
   '¿Es segura mi plata?':
     'Todos los saldos son ficticios y solo para uso dentro de la plataforma. Tus datos están protegidos con JWT y conexiones seguras.',
 }
