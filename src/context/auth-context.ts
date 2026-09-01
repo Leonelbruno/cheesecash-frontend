@@ -3,7 +3,7 @@ import { createContext } from 'react'
 export interface User {
   id: number
   email: string
-  full_name: string
+  fullName: string
 }
 
 export interface AuthContextType {
@@ -11,11 +11,7 @@ export interface AuthContextType {
   loading: boolean
   login: (email: string, password: string) => Promise<void>
   loginWithGoogle: (googleToken: string) => Promise<void>
-  register: (
-    email: string,
-    password: string,
-    fullName: string,
-  ) => Promise<void>
+  register: (email: string, password: string, fullName: string) => Promise<void>
   logout: () => void
 }
 

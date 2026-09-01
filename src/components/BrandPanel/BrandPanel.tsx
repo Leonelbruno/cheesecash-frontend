@@ -1,4 +1,5 @@
-import { useEffect, useId, useRef } from 'react'
+
+import { useEffect, useRef } from 'react'
 import './BrandPanel.css'
 
 const HOLE_COUNT = 10
@@ -10,46 +11,15 @@ const HOLE_STYLES = Array.from({ length: HOLE_COUNT }, () => ({
 }))
 
 function CheeseCoin({ className }: { className?: string }) {
-  const id = useId()
-
-  const rimGrad = `${id}-rim`
-  const cheeseGrad = `${id}-cheese`
-  const holeGrad = `${id}-hole`
-
   return (
     <svg className={className} viewBox="0 0 48 48">
-      <defs>
-        <radialGradient id={cheeseGrad} cx="34%" cy="28%" r="78%">
-          <stop offset="0%" stopColor="#fbeec0" />
-          <stop offset="55%" stopColor="#e9bf62" />
-          <stop offset="100%" stopColor="#c4922f" />
-        </radialGradient>
-
-        <linearGradient
-          id={rimGrad}
-          x1="20%"
-          y1="0%"
-          x2="80%"
-          y2="100%"
-        >
-          <stop offset="0%" stopColor="#8a6416" />
-          <stop offset="50%" stopColor="#f0cd7a" />
-          <stop offset="100%" stopColor="#8a6416" />
-        </linearGradient>
-
-        <radialGradient id={holeGrad} cx="35%" cy="30%" r="80%">
-          <stop offset="0%" stopColor="#a9702f" />
-          <stop offset="100%" stopColor="#5e3a13" />
-        </radialGradient>
-      </defs>
-
-      <circle cx="24" cy="24" r="21" fill={`url(#${rimGrad})`} />
-      <circle cx="24" cy="24" r="18.4" fill={`url(#${cheeseGrad})`} />
-      <circle cx="16.5" cy="17" r="3.3" fill={`url(#${holeGrad})`} />
-      <circle cx="27" cy="14.5" r="2" fill={`url(#${holeGrad})`} />
-      <circle cx="30.5" cy="25.5" r="3.7" fill={`url(#${holeGrad})`} />
-      <circle cx="18" cy="29.5" r="2.5" fill={`url(#${holeGrad})`} />
-      <circle cx="23.5" cy="22" r="1.4" fill={`url(#${holeGrad})`} />
+      <circle cx="24" cy="24" r="21" fill="url(#rimGrad)" />
+      <circle cx="24" cy="24" r="18.4" fill="url(#cheeseGrad)" />
+      <circle cx="16.5" cy="17" r="3.3" fill="url(#holeGrad)" />
+      <circle cx="27" cy="14.5" r="2" fill="url(#holeGrad)" />
+      <circle cx="30.5" cy="25.5" r="3.7" fill="url(#holeGrad)" />
+      <circle cx="18" cy="29.5" r="2.5" fill="url(#holeGrad)" />
+      <circle cx="23.5" cy="22" r="1.4" fill="url(#holeGrad)" />
     </svg>
   )
 }
@@ -148,4 +118,5 @@ function BrandPanel() {
 }
 
 export default BrandPanel
+
 export { CheeseCoin }

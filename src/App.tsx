@@ -1,36 +1,43 @@
 import { Routes, Route, Navigate } from 'react-router-dom'
 import { AuthProvider } from './context/AuthContext'
 import { ProtectedRoute, PublicRoute } from './components/ProtectedRoute'
-import Login from './pages/Login/Login'
-import Register from './pages/Register/Register'
+import Layout from './components/layout/Layout'
+import AuthPage from './pages/Auth/AuthPage'
 import Dashboard from './pages/Dashboard/Dashboard'
-import Wallet from './pages/Wallet/Wallet'
-import AppLayout from './components/layout/Applayout/AppLayout'
+import Operar from './pages/Operar/Operar'
+import Historial from './pages/Historial/Historial'
+import Conversor from './pages/Conversor/Conversor'
+import Transferir from './pages/Transferir/Transferir'
+import ChatBot from './components/ChatBot/ChatBot'
 
 function App() {
   return (
     <AuthProvider>
       <Routes>
-        {/* Ruta raíz → redirige al login */}
         <Route path="/" element={<Navigate to="/login" replace />} />
 
-        {/* Rutas públicas: si ya tiene sesión → va al dashboard */}
+        {/* Rutas públicas */}
         <Route element={<PublicRoute />}>
-          <Route path="/login" element={<Login />} />
-          <Route path="/register" element={<Register />} />
+          <Route path="/login" element={<AuthPage />} />
+          <Route path="/register" element={<AuthPage />} />
         </Route>
 
-        {/* Rutas privadas: si no tiene sesión → va al login */}
+        {/* Rutas protegidas */}
         <Route element={<ProtectedRoute />}>
-          <Route element={<AppLayout />}>
+          <Route element={<Layout />}>
             <Route path="/dashboard" element={<Dashboard />} />
-            <Route path="/wallet" element={<Wallet />} />
+            <Route path="/operar" element={<Operar />} />
+            <Route path="/historial" element={<Historial />} />
+            <Route path="/conversor" element={<Conversor />} />
+            <Route path="/transferir" element={<Transferir />} />
           </Route>
         </Route>
 
-        {/* 404 → login */}
         <Route path="*" element={<Navigate to="/login" replace />} />
       </Routes>
+
+      {/* Chatbot flotante */}
+      <ChatBot />
     </AuthProvider>
   )
 }

@@ -1,7 +1,12 @@
+import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../../context/useAuth'
 import './Dashboard.css'
-import { ShoppingBag, ArrowUpFromLine, ArrowLeftRight, CircleDollarSign } from 'lucide-react'
-import { CheeseCoin } from '../../components/BrandPanel/BrandPanel'
+import {
+  ShoppingBag,
+  ArrowUpFromLine,
+  ArrowLeftRight,
+  CircleDollarSign,
+} from 'lucide-react'
 
 const balances = [
   {
@@ -41,7 +46,7 @@ const balances = [
 const quickActions = [
   { label: 'Comprar', icon: ShoppingBag },
   { label: 'Vender', icon: ArrowUpFromLine },
-  { label: 'Intercambiar', icon: ArrowLeftRight }
+  { label: 'Intercambiar', icon: ArrowLeftRight },
 ]
 
 const transactions = [
@@ -76,23 +81,13 @@ const transactions = [
 
 function Dashboard() {
   const { user } = useAuth()
+  const navigate = useNavigate()
 
-  const userName = user?.full_name || 'Usuario'
+  const userName = user?.fullName || 'Usuario'
   const initial = userName.charAt(0).toUpperCase()
 
   return (
     <div className="dashboard">
-
-      <div className="dashboard-mobile-bar">
-
-        <div className="dashboard-mobile-logo">
-          <CheeseCoin className="dashboard-mobile-logo-icon" />
-          <strong>Cheese Cash</strong>
-        </div>
-
-        <div className="dashboard-avatar small">{initial}</div>
-      </div>
-
       <main className="dashboard-main">
         <header className="dashboard-header">
           <div>
@@ -160,7 +155,11 @@ function Dashboard() {
               const Icon = action.icon
 
               return (
-                <button className="quick-action" key={action.label}>
+                <button
+                  className="quick-action"
+                  key={action.label}
+                  onClick={() => navigate('/operar')}
+                >
                   <Icon size={24} />
                   <strong>{action.label}</strong>
                 </button>
@@ -175,7 +174,9 @@ function Dashboard() {
               Últimos movimientos
             </h2>
 
-            <button>Ver todos</button>
+            <button onClick={() => navigate('/historial')}>
+              Ver todos
+            </button>
           </div>
 
           <div className="transaction-list">

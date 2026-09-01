@@ -1,0 +1,207 @@
+/* ── Variables (mismas del auth) ── */
+:root {
+  --bg: #0a0908;
+  --panel: #0d0b09;
+  --card: #141210;
+  --card-border: rgba(232, 196, 104, 0.14);
+  --gold-1: #f2d488;
+  --gold-2: #d9a942;
+  --gold-3: #8a6416;
+  --cream: #f6efdf;
+  --muted: #9a927f;
+}
+
+/* ── Shell ── */
+.app-shell {
+  display: flex;
+  min-height: 100vh;
+  background: var(--bg);
+  color: var(--cream);
+  font-family: 'Inter', sans-serif;
+}
+
+/* ── Sidebar ── */
+.sidebar {
+  width: 220px;
+  flex-shrink: 0;
+  overflow: hidden;
+  background: var(--panel);
+  border-right: 1px solid var(--card-border);
+  display: flex;
+  flex-direction: column;
+  padding: 28px 0;
+  position: sticky;
+  top: 0;
+  height: 100vh;
+}
+
+/* logo */
+.sidebar-logo {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 0 20px 28px;
+  border-bottom: 1px solid var(--card-border);
+}
+.sidebar-logo .mark {
+  width: 34px;
+  height: 34px;
+  flex-shrink: 0;
+  filter: drop-shadow(0 3px 8px rgba(217, 169, 66, 0.3));
+}
+.sidebar-logo .wordmark {
+  font-family: 'Poppins', sans-serif;
+  font-weight: 700;
+  font-size: 17px;
+  color: var(--cream);
+}
+
+/* nav links */
+.sidebar-nav {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 20px 12px;
+}
+.nav-link {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 11px 12px;
+  border-radius: 10px;
+  text-decoration: none;
+  color: var(--muted);
+  font-size: 14px;
+  font-weight: 500;
+  transition: background 0.15s, color 0.15s;
+  cursor: pointer;
+  border: none;
+  background: none;
+  width: 100%;
+  text-align: left;
+  font-family: 'Inter', sans-serif;
+}
+.nav-link:hover {
+  background: rgba(232, 196, 104, 0.06);
+  color: var(--cream);
+}
+.nav-link.active {
+  background: linear-gradient(135deg, rgba(242, 212, 136, 0.15), rgba(217, 169, 66, 0.08));
+  color: var(--gold-1);
+  border: 1px solid rgba(242, 212, 136, 0.15);
+}
+.nav-icon {
+  font-size: 17px;
+  width: 20px;
+  text-align: center;
+  flex-shrink: 0;
+}
+
+/* user + logout */
+.sidebar-footer {
+  padding: 16px 12px 0;
+  border-top: 1px solid var(--card-border);
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.sidebar-user {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 12px;
+}
+.user-avatar {
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, var(--gold-1), var(--gold-2));
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: 'Poppins', sans-serif;
+  font-weight: 700;
+  font-size: 14px;
+  color: #161311;
+  flex-shrink: 0;
+}
+.user-info .user-name {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--cream);
+}
+.user-info .user-plan {
+  font-size: 10px;
+  color: var(--gold-1);
+  font-family: 'JetBrains Mono', monospace;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+/* logout button */
+.btn-logout {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 12px;
+  border-radius: 10px;
+  border: none;
+  background: none;
+  color: var(--muted);
+  font-size: 13.5px;
+  font-family: 'Inter', sans-serif;
+  font-weight: 500;
+  cursor: pointer;
+  width: 100%;
+  text-align: left;
+  transition: background 0.15s, color 0.15s;
+}
+.btn-logout:hover {
+  background: rgba(226, 112, 95, 0.08);
+  color: #e2705f;
+}
+
+/* ── Main content ── */
+.main-content {
+  flex: 1;
+  overflow-y: auto;
+  min-width: 0;
+  padding: 40px 48px;
+  display: flex;
+  justify-content: center;
+}
+
+.main-content > * {
+  width: 100%;
+  max-width: 720px;
+}
+
+/* ── Responsive: sidebar colapsada en mobile ── */
+@media (max-width: 768px) {
+  .sidebar {
+    width: 60px;
+  }
+  .sidebar-logo .wordmark,
+  .nav-link span:not(.nav-icon),
+  .user-info,
+  .btn-logout span:not(.nav-icon) {
+    display: none;
+  }
+  .sidebar-logo {
+    justify-content: center;
+    padding: 0 0 28px;
+  }
+  .nav-link {
+    justify-content: center;
+    padding: 12px;
+  }
+  .sidebar-user {
+    justify-content: center;
+    padding: 8px;
+  }
+  .btn-logout {
+    justify-content: center;
+    padding: 12px;
+  }
+}
