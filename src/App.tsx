@@ -1,7 +1,7 @@
 import { Routes, Route, Navigate } from 'react-router-dom'
 import { AuthProvider } from './context/AuthContext'
 import { ProtectedRoute, PublicRoute } from './components/ProtectedRoute'
-import Layout from './components/layout/Layout'
+import Layout from './components/Layout/Layout'
 import AuthPage from './pages/Auth/AuthPage'
 import Dashboard from './pages/Dashboard/Dashboard'
 import Operar from './pages/Operar/Operar'
