@@ -33,23 +33,16 @@ let msgId = 0
 
 export default function ChatBot() {
   const [open, setOpen]       = useState(false)
-  const [pos, setPos]         = useState({ x: 0, y: 0 })
-  const [ready, setReady]     = useState(false)
+  const [pos, setPos]         = useState(() => ({
+    x: window.innerWidth  - FAB - MARGIN,
+    y: window.innerHeight - FAB - MARGIN,
+  }))
   const [messages, setMessages] = useState<Message[]>([
     { id: ++msgId, from: 'bot', text: '¡Hola! Soy el asistente de Cheese Cash. ¿En qué puedo ayudarte hoy?' },
   ])
   const [input, setInput]     = useState('')
   const [typing, setTyping]   = useState(false)
   const bottomRef             = useRef<HTMLDivElement>(null)
-
-  /* posición inicial: esquina inferior derecha */
-  useEffect(() => {
-    setPos({
-      x: window.innerWidth  - FAB - MARGIN,
-      y: window.innerHeight - FAB - MARGIN,
-    })
-    setReady(true)
-  }, [])
 
   /* scroll al último mensaje */
   useEffect(() => {
@@ -113,14 +106,12 @@ export default function ChatBot() {
     }, 900)
   }
 
-  if (!ready) return null
-
   return (
     <>
       {/* ── FAB arrastrable ── */}
       <button
         className="chat-fab"
-        style={{ left: pos.x, top: pos.y, bottom: 'auto', right: 'auto', cursor: dragging.current ? 'grabbing' : 'grab' }}
+        style={{ left: pos.x, top: pos.y, bottom: 'auto', right: 'auto' }}
         onPointerDown={onPointerDown}
         onPointerMove={onPointerMove}
         onPointerUp={onPointerUp}
