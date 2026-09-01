@@ -4,6 +4,20 @@ Billetera digital multimoneda. Permite gestionar saldos en ARS, USD, EUR y BTC c
 
 ---
 
+## Índice
+
+- [Stack](#stack)
+- [Requisitos](#requisitos)
+- [Setup local](#setup-local)
+- [Variables de entorno](#variables-de-entorno)
+- [Backend](#backend)
+- [Scripts](#scripts)
+- [Estructura del proyecto](#estructura-del-proyecto)
+- [Decisiones técnicas](#decisiones-técnicas)
+- [Equipo](#equipo)
+
+---
+
 ## Stack
 
 - **React 19** + **TypeScript** + **Vite**
@@ -121,5 +135,12 @@ src/
 ---
 
 ## Equipo
+
+**One Team:**
+
+- Jeremias Bustos
+- Valentino Berdini
+- Gonzalo Bastias
+- Leonel Bruno Vera
 
 Proyecto Final Full Stack — 2026
