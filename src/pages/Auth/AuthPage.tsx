@@ -81,7 +81,7 @@ function Holes() {
     return () => container.removeEventListener('mousemove', handleMove)
   }, [])
 
-   const [holeData] = useState(() =>
+  const [holeData] = useState(() =>
     Array.from({ length: 10 }, () => ({
       size: 10 + Math.random() * 34,
       left: Math.random() * 90,
@@ -121,6 +121,7 @@ export default function AuthPage() {
   const isRegister = location.pathname === '/register'
 
   const [name, setName] = useState('')
+  const [birthDate, setBirthDate] = useState('')
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [confirmPassword, setConfirmPassword] = useState('')
@@ -142,19 +143,40 @@ export default function AuthPage() {
     setPassword('')
     setConfirmPassword('')
     setName('')
+    setBirthDate('')
     navigate(tab === 'login' ? '/login' : '/register')
   }
 
   const validateRegister = (): string | null => {
-    if (!name || !email || !password || !confirmPassword) {
+    if (!name || !birthDate || !email || !password || !confirmPassword) {
       return 'Completá todos los campos'
     }
+
+    const today = new Date()
+    const [year, month, day] = birthDate.split('-').map(Number)
+
+    let age = today.getFullYear() - year
+
+    const birthdayHasNotPassed =
+      today.getMonth() + 1 < month ||
+      (today.getMonth() + 1 === month && today.getDate() < day)
+
+    if (birthdayHasNotPassed) {
+      age--
+    }
+
+    if (age < 18) {
+      return 'Debés ser mayor de 18 años para registrarte'
+    }
+
     if (password.length < 8) {
       return 'La contraseña debe tener al menos 8 caracteres'
     }
+
     if (password !== confirmPassword) {
       return 'Las contraseñas no coinciden'
     }
+
     return null
   }
 
@@ -177,12 +199,16 @@ export default function AuthPage() {
       setLoading(true)
 
       if (isRegister) {
-        await register(email, password, name)
+        await register(email, password, name, birthDate)
+
+        setLoading(false)
         setToast('¡Usuario creado con éxito!')
+
         redirectTimer.current = window.setTimeout(
           () => navigate('/login', { replace: true }),
           2500,
         )
+
         return
       }
 
@@ -288,8 +314,21 @@ export default function AuthPage() {
                     disabled={loading}
                   />
                 </div>
-              )}
 
+              )}
+              {isRegister && (
+                <div className="field">
+                  <label htmlFor="birthDate">Fecha de nacimiento</label>
+                  <input
+                    id="birthDate"
+                    type="date"
+                    value={birthDate}
+                    onChange={(e) => setBirthDate(e.target.value)}
+                    autoComplete="bday"
+                    disabled={loading}
+                  />
+                </div>
+              )}
               <div className="field">
                 <label htmlFor="authEmail">Correo</label>
                 <input
