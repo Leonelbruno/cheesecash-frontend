@@ -130,8 +130,29 @@ export default function Layout() {
       .slice(0, 2)
       .toUpperCase()
     : '?'
+
   return (
     <div className="app-shell">
+
+      {/* Header (solo mobile) */}
+      <header className="mobile-header">
+        <div className="mobile-header-brand">
+          <CheeseCoin size={28} />
+          <span className="wordmark wordmark--gradient">Cheese Cash</span>
+        </div>
+
+        <div className="mobile-header-user">
+          <div className="user-avatar">{initials}</div>
+          <button
+            className="mobile-logout"
+            onClick={handleLogout}
+            aria-label="Cerrar sesión"
+            title="Cerrar sesión"
+          >
+            <IconLogout />
+          </button>
+        </div>
+      </header>
 
       {/* Sidebar (desktop) */}
       <aside className="sidebar">
