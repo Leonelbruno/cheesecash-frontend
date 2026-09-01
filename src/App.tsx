@@ -5,6 +5,7 @@ import Login from './pages/Login/Login'
 import Register from './pages/Register/Register'
 import Dashboard from './pages/Dashboard/Dashboard'
 import Wallet from './pages/Wallet/Wallet'
+import AppLayout from './components/layout/Applayout/AppLayout'
 
 function App() {
   return (
@@ -21,8 +22,10 @@ function App() {
 
         {/* Rutas privadas: si no tiene sesión → va al login */}
         <Route element={<ProtectedRoute />}>
-          <Route path="/dashboard" element={<Dashboard />} />
-          <Route path="/wallet" element={<Wallet />} />
+          <Route element={<AppLayout />}>
+            <Route path="/dashboard" element={<Dashboard />} />
+            <Route path="/wallet" element={<Wallet />} />
+          </Route>
         </Route>
 
         {/* 404 → login */}

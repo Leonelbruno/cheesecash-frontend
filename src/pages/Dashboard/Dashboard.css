@@ -46,14 +46,6 @@
   justify-content: space-between;
 }
 
-.dashboard-menu-button {
-  border: 0;
-  background: transparent;
-  color: var(--dashboard-muted);
-  font-size: 1.4rem;
-  cursor: pointer;
-}
-
 .dashboard-mobile-logo {
   display: flex;
   align-items: center;
@@ -289,6 +281,9 @@
 /* ---------- QUICK ACTIONS ---------- */
 
 .quick-actions {
+  width: 100%;
+  min-width: 0;
+
   display: flex;
   gap: 0.65rem;
 
@@ -321,18 +316,6 @@
   gap: 0.5rem;
 
   cursor: pointer;
-}
-
-.quick-action span {
-  font-size: 1.3rem;
-}
-
-.quick-action strong {
-  font-size: 0.7rem;
-}
-
-.quick-action:active {
-  transform: scale(0.96);
 }
 
 /* ---------- TRANSACTIONS ---------- */
@@ -487,24 +470,14 @@
 /* ---------- DESKTOP ---------- */
 
 @media (min-width: 900px) {
-  .dashboard {
-    width: calc(100% - 255px);
-    margin-left: 255px;
+  .dashboard-mobile-bar {
+    display: none;
   }
 
   .dashboard-main {
     width: 100%;
     max-width: 850px;
     margin: 0 auto;
-    padding: 1.5rem 2rem 3rem;
-  }
-}
-
-  .dashboard-mobile-bar {
-    display: none;
-  }
-
-  .dashboard-main {
     padding: 1.5rem 2rem 3rem;
   }
 
@@ -521,8 +494,13 @@
   }
 
   .quick-actions {
+    width: 100%;
+    min-width: 0;
+
     display: grid;
     grid-template-columns: repeat(5, minmax(0, 1fr));
+    gap: 0.65rem;
+
     overflow: visible;
   }
 
@@ -535,7 +513,8 @@
   .currency-card:hover {
     border-color: rgba(245, 197, 24, 0.4);
   }
-
+}
+/* ---------- PANTALLAS MUY PEQUEÑAS ---------- */
 
 @media (max-width: 330px) {
   .currency-grid {

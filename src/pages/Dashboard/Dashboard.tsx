@@ -1,6 +1,5 @@
 import { useAuth } from '../../context/useAuth'
 import './Dashboard.css'
-import Sidebar from '../../components/layout/Sidebar/Sidebar'
 import { ShoppingBag, ArrowUpFromLine, ArrowLeftRight, Calculator, Send, CircleDollarSign } from 'lucide-react'
 import { CheeseCoin } from '../../components/BrandPanel/BrandPanel'
 
@@ -78,15 +77,13 @@ const transactions = [
 ]
 
 function Dashboard() {
-  const { user, logout } = useAuth()
+  const { user } = useAuth()
 
   const userName = user?.full_name || 'Usuario'
   const initial = userName.charAt(0).toUpperCase()
 
   return (
     <div className="dashboard">
-
-      <Sidebar userName={userName} onLogout={logout} />
 
       <div className="dashboard-mobile-bar">
 
