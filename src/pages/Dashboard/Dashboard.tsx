@@ -1,6 +1,6 @@
 import { useAuth } from '../../context/useAuth'
 import './Dashboard.css'
-import { ShoppingBag, ArrowUpFromLine, ArrowLeftRight, Calculator, Send, CircleDollarSign } from 'lucide-react'
+import { ShoppingBag, ArrowUpFromLine, ArrowLeftRight, CircleDollarSign } from 'lucide-react'
 import { CheeseCoin } from '../../components/BrandPanel/BrandPanel'
 
 const balances = [
@@ -41,9 +41,7 @@ const balances = [
 const quickActions = [
   { label: 'Comprar', icon: ShoppingBag },
   { label: 'Vender', icon: ArrowUpFromLine },
-  { label: 'Intercambiar', icon: ArrowLeftRight },
-  { label: 'Conversor', icon: Calculator },
-  { label: 'Transferir', icon: Send },
+  { label: 'Intercambiar', icon: ArrowLeftRight }
 ]
 
 const transactions = [

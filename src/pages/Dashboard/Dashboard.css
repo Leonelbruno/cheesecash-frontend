@@ -33,7 +33,6 @@
   font: inherit;
 }
 
-
 /* ---------- MOBILE HEADER ---------- */
 
 .dashboard-mobile-bar {
@@ -498,12 +497,11 @@
     min-width: 0;
 
     display: grid;
-    grid-template-columns: repeat(5, minmax(0, 1fr));
+    grid-template-columns: repeat(3, minmax(0, 1fr));
     gap: 0.65rem;
 
     overflow: visible;
   }
-
   .quick-action {
     width: 100%;
     min-width: 0;
