@@ -1,0 +1,538 @@
+@import url("https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap");
+
+:root {
+  --dashboard-bg: #0a0a0a;
+  --dashboard-surface: #1a1a1a;
+  --dashboard-surface-2: #222222;
+  --dashboard-border: #2a2a2a;
+  --dashboard-gold: #f5c518;
+  --dashboard-text: #f0ede6;
+  --dashboard-muted: #a09c94;
+  --dashboard-green: #3ddc84;
+  --dashboard-red: #ff4d4d;
+}
+
+.dashboard,
+.dashboard * {
+  box-sizing: border-box;
+}
+
+.dashboard {
+  width: 100%;
+  max-width: 100%;
+  min-height: 100dvh;
+  margin-left: 0;
+  overflow-x: hidden;
+
+  background: var(--dashboard-bg);
+  color: var(--dashboard-text);
+  font-family: "Plus Jakarta Sans", sans-serif;
+}
+
+.dashboard button {
+  font: inherit;
+}
+
+/* ---------- MOBILE HEADER ---------- */
+
+.dashboard-mobile-bar {
+  height: 72px;
+  padding: 0 1rem;
+  border-bottom: 1px solid var(--dashboard-border);
+
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.dashboard-mobile-logo {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  color: var(--dashboard-gold);
+  font-size: 0.85rem;
+}
+
+.dashboard-avatar {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+
+  display: grid;
+  place-items: center;
+
+  background: var(--dashboard-gold);
+  color: var(--dashboard-bg);
+
+  font-weight: 800;
+}
+
+.dashboard-avatar.small {
+  width: 36px;
+  height: 36px;
+}
+
+.desktop-avatar {
+  display: none;
+}
+
+/* ---------- CONTENT ---------- */
+
+.dashboard-main {
+  width: 100%;
+  min-width: 0;
+  max-width: 850px;
+  margin: 0 auto;
+  padding: 1.5rem 1rem 2.5rem;
+}
+
+.dashboard-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1.5rem;
+}
+
+.dashboard-header p {
+  margin: 0 0 0.25rem;
+  color: var(--dashboard-muted);
+  font-size: 0.85rem;
+}
+
+.dashboard-header h1 {
+  margin: 0;
+  color: var(--dashboard-text);
+  font-size: 1.5rem;
+  line-height: 1.2;
+}
+
+/* ---------- TOTAL BALANCE ---------- */
+
+.total-balance-card {
+  position: relative;
+  overflow: hidden;
+
+  padding: 1.5rem;
+  border: 1px solid var(--dashboard-border);
+  border-radius: 1rem;
+
+  background: var(--dashboard-surface);
+}
+
+.dashboard-section-label,
+.dashboard-section-title {
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--dashboard-muted);
+  font-weight: 700;
+}
+
+.dashboard-section-label {
+  position: relative;
+  z-index: 1;
+
+  margin: 0 0 0.7rem;
+  font-size: 0.7rem;
+}
+
+.total-balance-card h2 {
+  position: relative;
+  z-index: 1;
+
+  margin: 0;
+
+  color: var(--dashboard-gold);
+  font-family: "DM Mono", monospace;
+  font-size: clamp(2rem, 8vw, 2.7rem);
+}
+
+.balance-update {
+  position: relative;
+  z-index: 1;
+
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.6rem;
+
+  margin-top: 0.75rem;
+}
+
+.balance-update span {
+  padding: 0.2rem 0.5rem;
+  border-radius: 999px;
+
+  background: rgba(61, 220, 132, 0.1);
+  color: var(--dashboard-green);
+
+  font-size: 0.75rem;
+  font-weight: 700;
+}
+
+.balance-update small {
+  color: var(--dashboard-muted);
+}
+
+.balance-decoration {
+  position: absolute;
+  border-radius: 50%;
+  background: var(--dashboard-gold);
+  opacity: 0.05;
+}
+
+.balance-decoration-top {
+  width: 130px;
+  height: 130px;
+  top: -50px;
+  right: -40px;
+}
+
+.balance-decoration-bottom {
+  width: 100px;
+  height: 100px;
+  bottom: -45px;
+  left: -30px;
+}
+
+/* ---------- SECTIONS ---------- */
+
+.dashboard-section {
+  margin-top: 1.8rem;
+}
+
+.dashboard-section-title {
+  margin: 0 0 0.8rem;
+  font-size: 0.9rem;
+}
+
+/* ---------- CURRENCIES ---------- */
+
+.currency-grid {
+  width: 100%;
+  min-width: 0;
+
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.75rem;
+}
+
+.currency-card {
+  width: 100%;
+  min-width: 0;
+
+  padding: 1rem;
+  border: 1px solid var(--dashboard-border);
+  border-radius: 0.8rem;
+  background: var(--dashboard-surface);
+}
+
+.currency-card-header {
+  display: flex;
+  justify-content: space-between;
+  gap: 0.5rem;
+
+  margin-bottom: 1rem;
+}
+
+.currency-card-header div {
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+}
+
+.currency-card-header div span {
+  color: var(--dashboard-muted);
+  font-size: 0.7rem;
+  font-weight: 700;
+}
+
+.currency-positive,
+.currency-negative {
+  font-size: 0.7rem;
+  font-weight: 800;
+}
+
+.currency-positive {
+  color: var(--dashboard-green);
+}
+
+.currency-negative {
+  color: var(--dashboard-red);
+}
+
+.currency-amount {
+  display: block;
+  overflow: hidden;
+
+  color: var(--dashboard-text);
+  font-family: "DM Mono", monospace;
+  font-size: clamp(0.9rem, 4vw, 1.1rem);
+  text-overflow: ellipsis;
+}
+
+.currency-card small {
+  display: block;
+  margin-top: 0.35rem;
+  color: #626262;
+  font-size: 0.65rem;
+}
+
+/* ---------- QUICK ACTIONS ---------- */
+
+.quick-actions {
+  width: 100%;
+  min-width: 0;
+
+  display: flex;
+  gap: 0.65rem;
+
+  overflow-x: auto;
+  padding-bottom: 0.3rem;
+
+  scrollbar-width: none;
+}
+
+.quick-actions::-webkit-scrollbar {
+  display: none;
+}
+
+.quick-action {
+  min-width: 76px;
+  min-height: 88px;
+
+  padding: 0.8rem 0.45rem;
+
+  border: 1px solid var(--dashboard-border);
+  border-radius: 0.75rem;
+
+  background: var(--dashboard-surface);
+  color: var(--dashboard-text);
+
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+
+  cursor: pointer;
+}
+
+/* ---------- TRANSACTIONS ---------- */
+
+.transactions-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.transactions-heading button {
+  margin-bottom: 0.8rem;
+  border: 0;
+
+  background: transparent;
+  color: var(--dashboard-gold);
+
+  font-size: 0.75rem;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.transaction-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+}
+
+.transaction-card {
+  padding: 0.85rem;
+
+  border: 1px solid var(--dashboard-border);
+  border-radius: 0.75rem;
+
+  background: var(--dashboard-surface);
+
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+
+  gap: 0.75rem;
+}
+
+.transaction-left {
+  min-width: 0;
+
+  display: flex;
+  align-items: center;
+  gap: 0.7rem;
+}
+
+.transaction-icon {
+  flex-shrink: 0;
+
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+
+  display: grid;
+  place-items: center;
+
+  background: var(--dashboard-surface-2);
+}
+
+.transaction-type {
+  display: inline-block;
+
+  padding: 0.15rem 0.5rem;
+  border-radius: 999px;
+
+  font-size: 0.7rem;
+  font-weight: 700;
+}
+
+.transaction-type.purchase {
+  background: rgba(61, 220, 132, 0.12);
+  color: var(--dashboard-green);
+}
+
+.transaction-type.exchange {
+  background: rgba(245, 197, 24, 0.12);
+  color: var(--dashboard-gold);
+}
+
+.transaction-type.sale {
+  background: rgba(255, 77, 77, 0.12);
+  color: var(--dashboard-red);
+}
+
+.transaction-left p {
+  margin: 0.3rem 0 0;
+
+  color: var(--dashboard-muted);
+  font-size: 0.65rem;
+}
+
+.transaction-values {
+  flex-shrink: 0;
+  text-align: right;
+}
+
+.transaction-values strong {
+  display: block;
+
+  font-family: "DM Mono", monospace;
+  font-size: 0.75rem;
+}
+
+.transaction-values span {
+  display: block;
+  margin-top: 0.25rem;
+
+  color: #626262;
+  font-size: 0.65rem;
+}
+
+.currency-card,
+.transaction-card,
+.transaction-left,
+.transaction-left > div,
+.transaction-values {
+  min-width: 0;
+}
+
+.currency-card {
+  overflow: hidden;
+}
+
+.currency-amount {
+  overflow-wrap: anywhere;
+}
+
+.transaction-left {
+  overflow: hidden;
+}
+
+.transaction-left p {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.transaction-values {
+  max-width: 45%;
+}
+
+.transaction-values strong,
+.transaction-values span {
+  overflow-wrap: anywhere;
+}
+
+/* ---------- DESKTOP ---------- */
+
+@media (min-width: 900px) {
+  .dashboard-mobile-bar {
+    display: none;
+  }
+
+  .dashboard-main {
+    width: 100%;
+    max-width: 850px;
+    margin: 0 auto;
+    padding: 1.5rem 2rem 3rem;
+  }
+
+  .desktop-avatar {
+    display: grid;
+  }
+
+  .currency-grid {
+    gap: 0.8rem;
+  }
+
+  .currency-card {
+    padding: 1.1rem;
+  }
+
+  .quick-actions {
+    width: 100%;
+    min-width: 0;
+
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 0.65rem;
+
+    overflow: visible;
+  }
+  .quick-action {
+    width: 100%;
+    min-width: 0;
+  }
+
+  .quick-action:hover,
+  .currency-card:hover {
+    border-color: rgba(245, 197, 24, 0.4);
+  }
+}
+/* ---------- PANTALLAS MUY PEQUEÑAS ---------- */
+
+@media (max-width: 330px) {
+  .currency-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .transaction-card {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .transaction-values {
+    width: 100%;
+    max-width: none;
+    text-align: left;
+  }
+}
+
+.dashboard-mobile-logo-icon {
+  width: 30px;
+  height: 30px;
+  flex-shrink: 0;
+}

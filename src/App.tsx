@@ -1,7 +1,7 @@
 import { Routes, Route, Navigate } from 'react-router-dom'
 import { AuthProvider } from './context/AuthContext'
 import { ProtectedRoute, PublicRoute } from './components/ProtectedRoute'
-import Layout from './components/Layout/Layout'
+import Layout from './components/layout/Layout'
 import AuthPage from './pages/Auth/AuthPage'
 import Dashboard from './pages/Dashboard/Dashboard'
 import Operar from './pages/Operar/Operar'
@@ -22,13 +22,13 @@ function App() {
           <Route path="/register" element={<AuthPage />} />
         </Route>
 
-        {/* Rutas protegidas — todas dentro del Layout con sidebar */}
+        {/* Rutas protegidas */}
         <Route element={<ProtectedRoute />}>
           <Route element={<Layout />}>
-            <Route path="/dashboard"  element={<Dashboard />} />
-            <Route path="/operar"     element={<Operar />} />
-            <Route path="/historial"  element={<Historial />} />
-            <Route path="/conversor"  element={<Conversor />} />
+            <Route path="/dashboard" element={<Dashboard />} />
+            <Route path="/operar" element={<Operar />} />
+            <Route path="/historial" element={<Historial />} />
+            <Route path="/conversor" element={<Conversor />} />
             <Route path="/transferir" element={<Transferir />} />
           </Route>
         </Route>
@@ -36,7 +36,7 @@ function App() {
         <Route path="*" element={<Navigate to="/login" replace />} />
       </Routes>
 
-      {/* Chatbot flotante en todas las pantallas */}
+      {/* Chatbot flotante */}
       <ChatBot />
     </AuthProvider>
   )

@@ -1,3 +1,4 @@
+
 import { useEffect, useRef } from 'react'
 import './BrandPanel.css'
 
@@ -117,4 +118,5 @@ function BrandPanel() {
 }
 
 export default BrandPanel
+
 export { CheeseCoin }
