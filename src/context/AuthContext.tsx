@@ -53,10 +53,15 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     setUser(mapUser(user))
   }
 
-  async function register(email: string, password: string, fullName: string) {
+  async function register(
+    email: string,
+    password: string,
+    fullName: string,
+    birthDate: string,
+  ) {
     await api.post<ApiUser>(
       '/auth/register',
-      { email, password, fullName },
+      { email, password, fullName, birthDate },
       { auth: false },
     )
   }
