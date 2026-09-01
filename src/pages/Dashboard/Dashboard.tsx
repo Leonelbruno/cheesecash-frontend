@@ -1,5 +1,7 @@
+import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../../context/useAuth'
+import { api } from '../../services/api'
 import './Dashboard.css'
 import {
   ShoppingBag,
@@ -8,40 +10,37 @@ import {
   CircleDollarSign,
 } from 'lucide-react'
 
-const balances = [
-  {
-    symbol: 'AR',
-    code: 'ARS',
-    amount: '8.250,00',
-    name: 'Peso Argentino',
-    variation: '+1.2%',
-    positive: true,
-  },
-  {
-    symbol: 'US',
-    code: 'USD',
-    amount: '2.340,50',
-    name: 'Dólar Estadounidense',
-    variation: '+0.3%',
-    positive: true,
-  },
-  {
-    symbol: 'EU',
-    code: 'EUR',
-    amount: '1.860,75',
-    name: 'Euro',
-    variation: '-0.8%',
-    positive: false,
-  },
-  {
-    symbol: '₿',
-    code: 'BTC',
-    amount: '0.00412',
-    name: 'Bitcoin',
-    variation: '+3.5%',
-    positive: true,
-  },
-]
+interface ApiBalance {
+  id: number
+  wallet_id: number
+  currency: string
+  amount: string
+}
+
+interface ApiTransaction {
+  id: number
+  type: string
+  from_currency: string
+  to_currency: string
+  from_amount: string
+  to_amount: string
+  created_at: string
+}
+
+const CURRENCY_ORDER = ['ARS', 'USD', 'EUR', 'BTC']
+
+const CURRENCY_META: Record<string, { symbol: string; name: string }> = {
+  ARS: { symbol: 'AR', name: 'Peso Argentino' },
+  USD: { symbol: 'US', name: 'Dólar Estadounidense' },
+  EUR: { symbol: 'EU', name: 'Euro' },
+  BTC: { symbol: '₿', name: 'Bitcoin' },
+}
+
+const TX_META: Record<string, { label: string; className: string; icon: typeof CircleDollarSign }> = {
+  buy: { label: 'Compra', className: 'purchase', icon: CircleDollarSign },
+  sell: { label: 'Venta', className: 'sale', icon: ArrowUpFromLine },
+  exchange: { label: 'Intercambio', className: 'exchange', icon: ArrowLeftRight },
+}
 
 const quickActions = [
   { label: 'Comprar', icon: ShoppingBag },
@@ -49,42 +48,78 @@ const quickActions = [
   { label: 'Intercambiar', icon: ArrowLeftRight },
 ]
 
-const transactions = [
-  {
-    id: 1,
-    type: 'Compra',
-    icon: CircleDollarSign,
-    detail: 'ARS → USD · 26 ago 2026',
-    result: '52.50 USD',
-    amount: '50.000 ARS',
-    className: 'purchase',
-  },
-  {
-    id: 2,
-    type: 'Intercambio',
-    icon: ArrowLeftRight,
-    detail: 'USD → EUR · 25 ago 2026',
-    result: '92.40 EUR',
-    amount: '100 USD',
-    className: 'exchange',
-  },
-  {
-    id: 3,
-    type: 'Venta',
-    icon: ArrowUpFromLine,
-    detail: 'BTC → ARS · 24 ago 2026',
-    result: '4.820 ARS',
-    amount: '0.001 BTC',
-    className: 'sale',
-  },
-]
+function formatAmount(currency: string, amount: string) {
+  const value = Number(amount)
+  if (Number.isNaN(value)) return amount
+  if (currency === 'BTC') return value.toFixed(8)
+  return value.toLocaleString('es-AR', {
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
+  })
+}
+
+function formatDate(iso: string) {
+  return new Date(iso).toLocaleDateString('es-AR', {
+    day: 'numeric',
+    month: 'short',
+    year: 'numeric',
+  })
+}
+
+function sortBalances(list: ApiBalance[]) {
+  return [...list].sort(
+    (a, b) =>
+      CURRENCY_ORDER.indexOf(a.currency) - CURRENCY_ORDER.indexOf(b.currency),
+  )
+}
 
 function Dashboard() {
   const { user } = useAuth()
   const navigate = useNavigate()
 
+  const [balances, setBalances] = useState<ApiBalance[]>([])
+  const [transactions, setTransactions] = useState<ApiTransaction[]>([])
+  const [loadingBalances, setLoadingBalances] = useState(true)
+  const [loadingTransactions, setLoadingTransactions] = useState(true)
+  const [balancesError, setBalancesError] = useState('')
+  const [transactionsError, setTransactionsError] = useState('')
+
+  useEffect(() => {
+    let cancelled = false
+
+    api
+      .get<ApiBalance[]>('/wallet/balances')
+      .then((data) => {
+        if (!cancelled) setBalances(sortBalances(data))
+      })
+      .catch((err) => {
+        if (!cancelled) setBalancesError((err as Error).message)
+      })
+      .finally(() => {
+        if (!cancelled) setLoadingBalances(false)
+      })
+
+    api
+      .get<ApiTransaction[]>('/transactions')
+      .then((data) => {
+        if (!cancelled) setTransactions(data.slice(0, 3))
+      })
+      .catch((err) => {
+        if (!cancelled) setTransactionsError((err as Error).message)
+      })
+      .finally(() => {
+        if (!cancelled) setLoadingTransactions(false)
+      })
+
+    return () => {
+      cancelled = true
+    }
+  }, [])
+
   const userName = user?.fullName || 'Usuario'
   const initial = userName.charAt(0).toUpperCase()
+
+  const usdBalance = balances.find((b) => b.currency === 'USD')
 
   return (
     <div className="dashboard">
@@ -102,49 +137,48 @@ function Dashboard() {
           <div className="balance-decoration balance-decoration-top" />
           <div className="balance-decoration balance-decoration-bottom" />
 
-          <p className="dashboard-section-label">
-            Saldo total (USD equiv.)
-          </p>
+          <p className="dashboard-section-label">Saldo en dólares</p>
 
-          <h2>$ 12.450,00</h2>
-
-          <div className="balance-update">
-            <span>+2.4% hoy</span>
-            <small>Actualizado hace 2 min</small>
-          </div>
+          <h2>
+            {loadingBalances
+              ? '—'
+              : usdBalance
+                ? `$ ${formatAmount('USD', usdBalance.amount)}`
+                : '$ 0,00'}
+          </h2>
         </section>
 
         <section className="dashboard-section">
           <h2 className="dashboard-section-title">Mis monedas</h2>
 
-          <div className="currency-grid">
-            {balances.map((balance) => (
-              <article className="currency-card" key={balance.code}>
-                <div className="currency-card-header">
-                  <div>
-                    <strong>{balance.symbol}</strong>
-                    <span>{balance.code}</span>
-                  </div>
+          {loadingBalances && <p>Cargando saldos…</p>}
 
-                  <span
-                    className={
-                      balance.positive
-                        ? 'currency-positive'
-                        : 'currency-negative'
-                    }
-                  >
-                    {balance.variation}
-                  </span>
-                </div>
+          {!loadingBalances && balancesError && <p>{balancesError}</p>}
 
-                <strong className="currency-amount">
-                  {balance.amount}
-                </strong>
+          {!loadingBalances && !balancesError && (
+            <div className="currency-grid">
+              {balances.map((balance) => {
+                const meta = CURRENCY_META[balance.currency]
 
-                <small>{balance.name}</small>
-              </article>
-            ))}
-          </div>
+                return (
+                  <article className="currency-card" key={balance.currency}>
+                    <div className="currency-card-header">
+                      <div>
+                        <strong>{meta?.symbol ?? balance.currency}</strong>
+                        <span>{balance.currency}</span>
+                      </div>
+                    </div>
+
+                    <strong className="currency-amount">
+                      {formatAmount(balance.currency, balance.amount)}
+                    </strong>
+
+                    <small>{meta?.name ?? balance.currency}</small>
+                  </article>
+                )
+              })}
+            </div>
+          )}
         </section>
 
         <section className="dashboard-section">
@@ -170,48 +204,69 @@ function Dashboard() {
 
         <section className="dashboard-section">
           <div className="transactions-heading">
-            <h2 className="dashboard-section-title">
-              Últimos movimientos
-            </h2>
+            <h2 className="dashboard-section-title">Últimos movimientos</h2>
 
-            <button onClick={() => navigate('/historial')}>
-              Ver todos
-            </button>
+            <button onClick={() => navigate('/historial')}>Ver todos</button>
           </div>
 
-          <div className="transaction-list">
-            {transactions.map((transaction) => {
-              const Icon = transaction.icon
+          {loadingTransactions && <p>Cargando movimientos…</p>}
 
-              return (
-                <article
-                  className="transaction-card"
-                  key={transaction.id}
-                >
-                  <div className="transaction-left">
-                    <div className="transaction-icon">
-                      <Icon size={18} />
+          {!loadingTransactions && transactionsError && (
+            <p>{transactionsError}</p>
+          )}
+
+          {!loadingTransactions && !transactionsError && transactions.length === 0 && (
+            <p>Todavía no tenés movimientos</p>
+          )}
+
+          {!loadingTransactions && !transactionsError && transactions.length > 0 && (
+            <div className="transaction-list">
+              {transactions.map((transaction) => {
+                const meta = TX_META[transaction.type]
+                const Icon = meta?.icon ?? CircleDollarSign
+
+                return (
+                  <article className="transaction-card" key={transaction.id}>
+                    <div className="transaction-left">
+                      <div className="transaction-icon">
+                        <Icon size={18} />
+                      </div>
+
+                      <div>
+                        <span
+                          className={`transaction-type ${meta?.className ?? ''}`}
+                        >
+                          {meta?.label ?? transaction.type}
+                        </span>
+
+                        <p>
+                          {transaction.from_currency} → {transaction.to_currency} ·{' '}
+                          {formatDate(transaction.created_at)}
+                        </p>
+                      </div>
                     </div>
 
-                    <div>
-                      <span
-                        className={`transaction-type ${transaction.className}`}
-                      >
-                        {transaction.type}
+                    <div className="transaction-values">
+                      <strong>
+                        {formatAmount(
+                          transaction.to_currency,
+                          transaction.to_amount,
+                        )}{' '}
+                        {transaction.to_currency}
+                      </strong>
+                      <span>
+                        {formatAmount(
+                          transaction.from_currency,
+                          transaction.from_amount,
+                        )}{' '}
+                        {transaction.from_currency}
                       </span>
-
-                      <p>{transaction.detail}</p>
                     </div>
-                  </div>
-
-                  <div className="transaction-values">
-                    <strong>{transaction.result}</strong>
-                    <span>{transaction.amount}</span>
-                  </div>
-                </article>
-              )
-            })}
-          </div>
+                  </article>
+                )
+              })}
+            </div>
+          )}
         </section>
       </main>
     </div>
