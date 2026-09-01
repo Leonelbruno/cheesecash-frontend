@@ -1,5 +1,11 @@
 import { createContext } from 'react'
 
+export interface ApiUser {
+  id: number
+  email: string
+  full_name: string
+}
+
 export interface User {
   id: number
   email: string

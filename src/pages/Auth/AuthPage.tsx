@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 import { useLocation, useNavigate } from 'react-router-dom'
+import { GoogleLogin } from '@react-oauth/google'
 import { useAuth } from '../../context/useAuth'
 import Toast from '../../components/Toast/Toast'
 import './AuthPage.css'
@@ -80,7 +81,7 @@ function Holes() {
     return () => container.removeEventListener('mousemove', handleMove)
   }, [])
 
-  const holeData = useRef(
+   const [holeData] = useState(() =>
     Array.from({ length: 10 }, () => ({
       size: 10 + Math.random() * 34,
       left: Math.random() * 90,
@@ -88,8 +89,8 @@ function Holes() {
       dur: (4 + Math.random() * 5).toFixed(1) + 's',
       dx: (Math.random() * 14 - 7).toFixed(1) + 'px',
       dy: (Math.random() * 14 - 7).toFixed(1) + 'px',
-    }))
-  ).current
+    })),
+  )
 
   return (
     <div className="holes" ref={containerRef}>
@@ -112,56 +113,106 @@ function Holes() {
   )
 }
 
-/* ══════════════════════════════════════════
-   Auth Page — login + register con tabs
-══════════════════════════════════════════ */
 export default function AuthPage() {
   const location = useLocation()
   const navigate = useNavigate()
-  const { login, register } = useAuth()
+  const { login, register, loginWithGoogle } = useAuth()
 
   const isRegister = location.pathname === '/register'
 
-  // form state
   const [name, setName] = useState('')
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
+  const [confirmPassword, setConfirmPassword] = useState('')
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
   const [toast, setToast] = useState<string | null>(null)
 
-  // reset error when switching tabs
+  const redirectTimer = useRef<number | null>(null)
+
+  useEffect(() => {
+    return () => {
+      if (redirectTimer.current) clearTimeout(redirectTimer.current)
+    }
+  }, [])
+
   const switchTo = (tab: 'login' | 'register') => {
     setError('')
     setEmail('')
     setPassword('')
+    setConfirmPassword('')
     setName('')
     navigate(tab === 'login' ? '/login' : '/register')
   }
 
+  const validateRegister = (): string | null => {
+    if (!name || !email || !password || !confirmPassword) {
+      return 'Completá todos los campos'
+    }
+    if (password.length < 8) {
+      return 'La contraseña debe tener al menos 8 caracteres'
+    }
+    if (password !== confirmPassword) {
+      return 'Las contraseñas no coinciden'
+    }
+    return null
+  }
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    if (!email || !password || (isRegister && !name)) {
+
+    if (isRegister) {
+      const validationError = validateRegister()
+      if (validationError) {
+        setError(validationError)
+        return
+      }
+    } else if (!email || !password) {
       setError('Completá todos los campos')
       return
     }
+
     try {
       setError('')
       setLoading(true)
+
       if (isRegister) {
         await register(email, password, name)
         setToast('¡Usuario creado con éxito!')
-        setTimeout(() => navigate('/login', { replace: true }), 4000)
-      } else {
-        await login(email, password)
-        navigate('/dashboard', { replace: true })
+        redirectTimer.current = window.setTimeout(
+          () => navigate('/login', { replace: true }),
+          2500,
+        )
+        return
       }
+
+      await login(email, password)
+      navigate('/dashboard', { replace: true })
     } catch (err) {
       setError((err as Error).message)
-    } finally {
       setLoading(false)
     }
   }
+
+  const handleGoogleSuccess = async (credential?: string) => {
+    if (!credential) {
+      setError('No se pudo iniciar sesión con Google')
+      return
+    }
+
+    try {
+      setError('')
+      setLoading(true)
+      await loginWithGoogle(credential)
+      navigate('/dashboard', { replace: true })
+    } catch (err) {
+      setError((err as Error).message)
+      setLoading(false)
+    }
+  }
+
+  const passwordsMismatch =
+    isRegister && confirmPassword.length > 0 && password !== confirmPassword
 
   return (
     <>
@@ -169,7 +220,6 @@ export default function AuthPage() {
       <CoinDefs />
       <div className="stage">
 
-        {/* ── Left brand panel ── */}
         <aside className="brand-panel">
           <Holes />
 
@@ -192,11 +242,9 @@ export default function AuthPage() {
           </div>
         </aside>
 
-        {/* ── Right form panel ── */}
         <main className="form-panel">
           <div className="card">
 
-            {/* mobile logo */}
             <div className="mobile-logo">
               <CoinMark size={40} />
               <div className="rule" />
@@ -205,10 +253,8 @@ export default function AuthPage() {
 
             <div className="card-top">
               <h2>{isRegister ? 'Creá tu cuenta' : 'Bienvenido de nuevo'}</h2>
-              <a href="#">¿Necesitás ayuda?</a>
             </div>
 
-            {/* tabs */}
             <div className={`tabs${isRegister ? ' register' : ''}`}>
               <div className="tab-wedge" />
               <button
@@ -227,7 +273,6 @@ export default function AuthPage() {
               </button>
             </div>
 
-            {/* form */}
             <form className="pane" onSubmit={handleSubmit} noValidate>
 
               {isRegister && (
@@ -240,6 +285,7 @@ export default function AuthPage() {
                     value={name}
                     onChange={(e) => setName(e.target.value)}
                     autoComplete="name"
+                    disabled={loading}
                   />
                 </div>
               )}
@@ -253,6 +299,7 @@ export default function AuthPage() {
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   autoComplete="email"
+                  disabled={loading}
                 />
               </div>
 
@@ -265,19 +312,32 @@ export default function AuthPage() {
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   autoComplete={isRegister ? 'new-password' : 'current-password'}
+                  disabled={loading}
                 />
               </div>
 
-              {!isRegister && (
-                <div className="row-between">
-                  <label className="remember">
-                    <input type="checkbox" /> Mantenerme conectado
-                  </label>
-                  <a href="#">Olvidé mi contraseña</a>
+              {isRegister && (
+                <div className="field">
+                  <label htmlFor="authConfirmPassword">Repetí la contraseña</label>
+                  <input
+                    id="authConfirmPassword"
+                    type="password"
+                    placeholder="••••••••"
+                    value={confirmPassword}
+                    onChange={(e) => setConfirmPassword(e.target.value)}
+                    autoComplete="new-password"
+                    disabled={loading}
+                    aria-invalid={passwordsMismatch}
+                  />
+                  {passwordsMismatch && (
+                    <small className="field-hint field-hint--error">
+                      Las contraseñas no coinciden
+                    </small>
+                  )}
                 </div>
               )}
 
-              {error && <p className="auth-error">{error}</p>}
+              {error && <p className="auth-error" role="alert">{error}</p>}
 
               <button type="submit" className="btn-submit" disabled={loading}>
                 {loading
@@ -288,9 +348,14 @@ export default function AuthPage() {
             </form>
 
             <div className="divider">o continuá con</div>
-            <div className="row-between" style={{ gap: 12 }}>
-              <button type="button" className="btn-social">Google</button>
-              <button type="button" className="btn-social">Apple</button>
+
+            <div className="google-btn-wrap">
+              <GoogleLogin
+                onSuccess={(res) => handleGoogleSuccess(res.credential)}
+                onError={() => setError('No se pudo iniciar sesión con Google')}
+                text={isRegister ? 'signup_with' : 'signin_with'}
+                width="320"
+              />
             </div>
 
             <p className="foot-note">
