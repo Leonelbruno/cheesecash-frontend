@@ -1,4 +1,5 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
+import { api } from '../../services/api'
 
 const C = {
   card: '#141210', cardBorder: 'rgba(232,196,104,0.14)',
@@ -7,38 +8,94 @@ const C = {
   green: '#4ade80', error: '#e2705f',
 }
 
-const MOCK_TXS = [
-  { id: 't1', type: 'compra',        from: 'ARS', to: 'USD', amount: '50.000 ARS', result: '52,50 USD',    rate: '1 USD = 952 ARS',      date: '26 ago 2026', time: '14:32' },
-  { id: 't2', type: 'intercambio',   from: 'USD', to: 'EUR', amount: '100 USD',    result: '92,40 EUR',    rate: '1 EUR = 1.082 USD',     date: '25 ago 2026', time: '09:15' },
-  { id: 't3', type: 'venta',         from: 'BTC', to: 'ARS', amount: '0.001 BTC',  result: '4.820 ARS',    rate: '1 BTC = 4.820.000 ARS', date: '24 ago 2026', time: '18:47' },
-  { id: 't4', type: 'compra',        from: 'ARS', to: 'EUR', amount: '80.000 ARS', result: '68,15 EUR',    rate: '1 EUR = 1.174 ARS',     date: '23 ago 2026', time: '11:20' },
-  { id: 't5', type: 'intercambio',   from: 'EUR', to: 'BTC', amount: '50 EUR',     result: '0.00105 BTC',  rate: '1 BTC = 47.619 EUR',    date: '22 ago 2026', time: '16:05' },
-  { id: 't6', type: 'transferencia', from: 'ARS', to: 'ARS', amount: '5.000 ARS',  result: '5.000 ARS',    rate: 'A @valen.lopez',        date: '21 ago 2026', time: '10:00' },
-]
+interface ApiTransaction {
+  id: number
+  wallet_id: number
+  type: string
+  from_currency: string
+  to_currency: string
+  from_amount: string
+  to_amount: string
+  exchange_rate_used: string
+  status: string
+  created_at: string
+}
 
 const TX_COLORS: Record<string, string> = {
-  compra:        'rgba(74,222,128,0.12)',
-  venta:         'rgba(226,112,95,0.12)',
-  intercambio:   'rgba(242,212,136,0.12)',
-  transferencia: 'rgba(154,146,127,0.12)',
+  buy: 'rgba(74,222,128,0.12)',
+  sell: 'rgba(226,112,95,0.12)',
+  exchange: 'rgba(242,212,136,0.12)',
 }
 const TX_TEXT: Record<string, string> = {
-  compra: '#4ade80', venta: '#e2705f', intercambio: '#f2d488', transferencia: '#9a927f',
+  buy: '#4ade80', sell: '#e2705f', exchange: '#f2d488',
 }
 const TX_LABEL: Record<string, string> = {
-  compra: 'Compra', venta: 'Venta', intercambio: 'Intercambio', transferencia: 'Transferencia',
+  buy: 'Compra', sell: 'Venta', exchange: 'Intercambio',
 }
 const TX_EMOJI: Record<string, string> = {
-  compra: '💰', venta: '📤', intercambio: '🔄', transferencia: '📲',
+  buy: '💰', sell: '📤', exchange: '🔄',
 }
 
-const FILTERS = ['Todas', 'Compra', 'Venta', 'Intercambio', 'Transferencia']
+const FILTERS: { label: string; value: string }[] = [
+  { label: 'Todas', value: 'all' },
+  { label: 'Compra', value: 'buy' },
+  { label: 'Venta', value: 'sell' },
+  { label: 'Intercambio', value: 'exchange' },
+]
+
+function formatAmount(currency: string, amount: string) {
+  const value = Number(amount)
+  if (Number.isNaN(value)) return amount
+  if (currency === 'BTC') return `${value.toFixed(8)} BTC`
+  return `${value.toLocaleString('es-AR', {
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
+  })} ${currency}`
+}
+
+function formatRate(tx: ApiTransaction) {
+  const rate = Number(tx.exchange_rate_used)
+  if (Number.isNaN(rate)) return ''
+  const decimals = rate < 1 ? 8 : 2
+  return `1 ${tx.from_currency} = ${rate.toFixed(decimals)} ${tx.to_currency}`
+}
+
+function formatDate(iso: string) {
+  const d = new Date(iso)
+  return {
+    date: d.toLocaleDateString('es-AR', { day: 'numeric', month: 'short', year: 'numeric' }),
+    time: d.toLocaleTimeString('es-AR', { hour: '2-digit', minute: '2-digit' }),
+  }
+}
 
 export default function Historial() {
-  const [active, setActive] = useState('Todas')
+  const [active, setActive] = useState('all')
+  const [transactions, setTransactions] = useState<ApiTransaction[]>([])
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState('')
 
-  const filtered = MOCK_TXS.filter(t =>
-    active === 'Todas' || t.type === active.toLowerCase()
+  useEffect(() => {
+    let cancelled = false
+
+    api
+      .get<ApiTransaction[]>('/transactions')
+      .then((data) => {
+        if (!cancelled) setTransactions(data)
+      })
+      .catch((err) => {
+        if (!cancelled) setError((err as Error).message)
+      })
+      .finally(() => {
+        if (!cancelled) setLoading(false)
+      })
+
+    return () => {
+      cancelled = true
+    }
+  }, [])
+
+  const filtered = transactions.filter(
+    (t) => active === 'all' || t.type === active,
   )
 
   return (
@@ -48,45 +105,68 @@ export default function Historial() {
         <p style={{ fontFamily: 'Inter, sans-serif', fontSize: 14, color: C.muted, marginTop: 4 }}>Historial completo de operaciones</p>
       </div>
 
-      {/* Filtros */}
       <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
-        {FILTERS.map(f => (
-          <button key={f} onClick={() => setActive(f)} style={{
+        {FILTERS.map((f) => (
+          <button key={f.value} onClick={() => setActive(f.value)} style={{
             padding: '6px 16px', borderRadius: 20, cursor: 'pointer', transition: 'all 0.15s',
-            border: `1px solid ${active === f ? C.goldMid : C.cardBorder}`,
-            background: active === f ? `linear-gradient(135deg, ${C.gold}, ${C.goldMid})` : 'transparent',
-            color: active === f ? '#161311' : C.muted,
+            border: `1px solid ${active === f.value ? C.goldMid : C.cardBorder}`,
+            background: active === f.value ? `linear-gradient(135deg, ${C.gold}, ${C.goldMid})` : 'transparent',
+            color: active === f.value ? '#161311' : C.muted,
             fontFamily: 'Inter, sans-serif', fontWeight: 600, fontSize: 13,
           }}>
-            {f}
+            {f.label}
           </button>
         ))}
       </div>
 
-      {/* Lista */}
       <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-        {filtered.map(t => (
-          <div key={t.id} style={{ display: 'flex', alignItems: 'center', gap: 16, padding: '16px 20px', background: C.card, border: `1px solid ${C.cardBorder}`, borderRadius: 14 }}>
-            <div style={{ width: 40, height: 40, borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 18, background: '#1a1510', flexShrink: 0 }}>
-              {TX_EMOJI[t.type]}
-            </div>
-            <div style={{ flex: 1, minWidth: 0 }}>
-              <span style={{ fontFamily: 'Inter, sans-serif', fontSize: 11, fontWeight: 600, padding: '2px 8px', borderRadius: 6, background: TX_COLORS[t.type], color: TX_TEXT[t.type] }}>
-                {TX_LABEL[t.type]}
-              </span>
-              <div style={{ fontFamily: 'Inter, sans-serif', fontSize: 11, marginTop: 4, color: C.mutedDark }}>
-                {t.type === 'transferencia' ? t.rate : `${t.from} → ${t.to}`} · {t.date} · {t.time}
+        {loading && (
+          <div style={{ padding: '64px 0', textAlign: 'center', fontFamily: 'Inter, sans-serif', fontSize: 14, color: C.mutedDark }}>
+            Cargando movimientos…
+          </div>
+        )}
+
+        {!loading && error && (
+          <div style={{ padding: '32px 20px', textAlign: 'center', fontFamily: 'Inter, sans-serif', fontSize: 14, color: C.error, background: C.card, border: `1px solid ${C.cardBorder}`, borderRadius: 14 }}>
+            {error}
+          </div>
+        )}
+
+        {!loading && !error && filtered.map((t) => {
+          const { date, time } = formatDate(t.created_at)
+          return (
+            <div key={t.id} style={{ display: 'flex', alignItems: 'center', gap: 16, padding: '16px 20px', background: C.card, border: `1px solid ${C.cardBorder}`, borderRadius: 14 }}>
+              <div style={{ width: 40, height: 40, borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 18, background: '#1a1510', flexShrink: 0 }}>
+                {TX_EMOJI[t.type] ?? '💱'}
+              </div>
+              <div style={{ flex: 1, minWidth: 0 }}>
+                <span style={{ fontFamily: 'Inter, sans-serif', fontSize: 11, fontWeight: 600, padding: '2px 8px', borderRadius: 6, background: TX_COLORS[t.type] ?? 'rgba(154,146,127,0.12)', color: TX_TEXT[t.type] ?? C.muted }}>
+                  {TX_LABEL[t.type] ?? t.type}
+                </span>
+                <div style={{ fontFamily: 'Inter, sans-serif', fontSize: 11, marginTop: 4, color: C.mutedDark }}>
+                  {t.from_currency} → {t.to_currency} · {date} · {time}
+                </div>
+                <div style={{ fontFamily: 'Inter, sans-serif', fontSize: 10, marginTop: 2, color: C.mutedDark }}>
+                  {formatRate(t)}
+                </div>
+              </div>
+              <div style={{ textAlign: 'right', flexShrink: 0 }}>
+                <div style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: 13, fontWeight: 600, color: C.text }}>
+                  {formatAmount(t.to_currency, t.to_amount)}
+                </div>
+                <div style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: 10, color: C.mutedDark }}>
+                  {formatAmount(t.from_currency, t.from_amount)}
+                </div>
               </div>
             </div>
-            <div style={{ textAlign: 'right', flexShrink: 0 }}>
-              <div style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: 13, fontWeight: 600, color: C.text }}>{t.result}</div>
-              <div style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: 10, color: C.mutedDark }}>{t.amount}</div>
-            </div>
-          </div>
-        ))}
-        {filtered.length === 0 && (
+          )
+        })}
+
+        {!loading && !error && filtered.length === 0 && (
           <div style={{ padding: '64px 0', textAlign: 'center', fontFamily: 'Inter, sans-serif', fontSize: 14, color: C.mutedDark }}>
-            Sin movimientos para este filtro
+            {transactions.length === 0
+              ? 'Todavía no tenés movimientos'
+              : 'Sin movimientos para este filtro'}
           </div>
         )}
       </div>

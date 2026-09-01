@@ -1,14 +1,17 @@
 import { useEffect, useState } from 'react'
 import { api } from '../services/api'
-import { AuthContext, type User } from './auth-context'
+import { AuthContext, type User, type ApiUser } from './auth-context'
 
 const TOKEN_KEY = 'cc_token'
+
+function mapUser(u: ApiUser): User {
+  return { id: u.id, email: u.email, fullName: u.full_name }
+}
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<User | null>(null)
   const [loading, setLoading] = useState(true)
 
-  // Al montar: validar token existente con /api/users/me
   useEffect(() => {
     async function loadUser() {
       const token = localStorage.getItem(TOKEN_KEY)
@@ -18,8 +21,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       }
 
       try {
-        const me = await api.get<User>('/users/me')
-        setUser(me)
+        const me = await api.get<ApiUser>('/users/me')
+        setUser(mapUser(me))
       } catch {
         localStorage.removeItem(TOKEN_KEY)
       } finally {
@@ -31,31 +34,27 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }, [])
 
   async function login(email: string, password: string) {
-    const { token, user } = await api.post<{ token: string; user: User }>(
+    const { token, user } = await api.post<{ token: string; user: ApiUser }>(
       '/auth/login',
       { email, password },
       { auth: false },
     )
     localStorage.setItem(TOKEN_KEY, token)
-    setUser(user)
+    setUser(mapUser(user))
   }
 
   async function loginWithGoogle(googleToken: string) {
-    const { token, user } = await api.post<{ token: string; user: User }>(
+    const { token, user } = await api.post<{ token: string; user: ApiUser }>(
       '/auth/google',
-      { token: googleToken },
+      { idToken: googleToken },
       { auth: false },
     )
     localStorage.setItem(TOKEN_KEY, token)
-    setUser(user)
+    setUser(mapUser(user))
   }
 
-  async function register(
-    email: string,
-    password: string,
-    fullName: string,
-  ) {
-    await api.post<User>(
+  async function register(email: string, password: string, fullName: string) {
+    await api.post<ApiUser>(
       '/auth/register',
       { email, password, fullName },
       { auth: false },
@@ -68,7 +67,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }
 
   return (
-    <AuthContext.Provider value={{ user, loading, login, loginWithGoogle, register, logout }}>
+    <AuthContext.Provider
+      value={{ user, loading, login, loginWithGoogle, register, logout }}
+    >
       {children}
     </AuthContext.Provider>
   )

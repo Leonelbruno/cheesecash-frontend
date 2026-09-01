@@ -391,3 +391,21 @@
   .form-panel { padding: 32px 20px; }
   .mobile-logo { display: flex; }
 }
+
+.google-btn-wrap {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 14px;
+}
+
+.field-hint {
+  display: block;
+  margin-top: 4px;
+  font-size: 12px;
+  opacity: 0.65;
+}
+
+.field-hint--error {
+  color: #e05252;
+  opacity: 1;
+}
