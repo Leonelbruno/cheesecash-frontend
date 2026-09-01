@@ -113,7 +113,7 @@ export default function Dashboard() {
   const [errorTx, setErrorTx]       = useState('')
 
   useEffect(() => {
-    api.get<Balance[] | { balances: Balance[] }>('/wallets/me/balances')
+    api.get<Balance[] | { balances: Balance[] }>('/wallet/balances')
       .then(res => {
         const data = Array.isArray(res) ? res : (res as { balances: Balance[] }).balances ?? []
         setBalances(data)
@@ -121,7 +121,7 @@ export default function Dashboard() {
       .catch(() => setErrorBal('No se pudo cargar el saldo. Intentá de nuevo más tarde.'))
       .finally(() => setLoadingBal(false))
 
-    api.get<Transaction[] | { transactions: Transaction[] }>('/transactions?limit=5')
+    api.get<Transaction[] | { transactions: Transaction[] }>('/transactions')
       .then(res => {
         const data = Array.isArray(res) ? res : (res as { transactions: Transaction[] }).transactions ?? []
         setTxs(data)
