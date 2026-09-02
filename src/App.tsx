@@ -9,12 +9,14 @@ import Historial from './pages/Historial/Historial'
 import Conversor from './pages/Conversor/Conversor'
 import Transferir from './pages/Transferir/Transferir'
 import ChatBot from './components/ChatBot/ChatBot'
+import ConfirmTransaction from './pages/ConfirmTransaction/ConfirmTransaction'
 
 function App() {
   return (
     <AuthProvider>
       <Routes>
         <Route path="/" element={<Navigate to="/login" replace />} />
+        <Route path="/confirm-transaction" element={<ConfirmTransaction />} />
 
         {/* Rutas públicas */}
         <Route element={<PublicRoute />}>
