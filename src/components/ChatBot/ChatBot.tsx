@@ -14,16 +14,6 @@ const QUICK_REPLIES = [
   '¿Es segura mi plata?',
 ]
 
-const BOT_ANSWERS: Record<string, string> = {
-  '¿Cómo compro monedas?':
-    'En el dashboard vas a ver tu billetera. Elegís la moneda que querés comprar, indicás el monto y confirmás. La tasa de cambio se aplica en tiempo real.',
-  '¿Qué tipo de cambio hay?':
-    'Podés ver las tasas de cambio disponibles en la sección Conversor. Las cotizaciones corresponden a las monedas soportadas: ARS, USD, EUR y BTC.',
-  '¿Cómo funciona el intercambio?':
-    'Podés convertir entre ARS, USD, EUR y BTC directamente desde tu billetera. El saldo se actualiza una vez confirmada la operación.',
-  '¿Es segura mi plata?':
-    'Todos los saldos son ficticios y solo para uso dentro de la plataforma. Tus datos están protegidos con JWT y conexiones seguras.',
-}
 
 const FAB   = 56
 const GAP   = 12
@@ -92,18 +82,25 @@ export default function ChatBot() {
     : pos.y + FAB + GAP
 
   /* ── Mensajes ── */
-  function sendMessage(text: string) {
+  async function sendMessage(text: string) {
     if (!text.trim()) return
     setMessages(prev => [...prev, { id: ++msgId, from: 'user', text: text.trim() }])
     setInput('')
     setTyping(true)
-    setTimeout(() => {
-      const reply =
-        BOT_ANSWERS[text.trim()] ??
-        'Anotado. Por ahora puedo ayudarte con preguntas sobre cómo usar la plataforma. Estamos trabajando para que el asistente responda más consultas pronto.'
+
+    try {
+      const res = await fetch('https://cheesecash-back-production.up.railway.app/api/chatbot', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ message: text.trim() }),
+      })
+      const data = await res.json()
+      setMessages(prev => [...prev, { id: ++msgId, from: 'bot', text: data.reply }])
+    } catch {
+      setMessages(prev => [...prev, { id: ++msgId, from: 'bot', text: 'Hubo un error al conectar con el asistente. Intentá de nuevo.' }])
+    } finally {
       setTyping(false)
-      setMessages(prev => [...prev, { id: ++msgId, from: 'bot', text: reply }])
-    }, 900)
+    }
   }
 
   return (
