@@ -235,13 +235,13 @@ function ConversorSection({ rates }: { rates: Record<string, number> | null }) {
         <div>
           <label style={labelStyle}>De</label>
           <select value={from} onChange={e => setFrom(e.target.value)} style={fieldStyle}>
-            {CURRENCIES.filter(c => c !== to).map(c => <option key={c} value={c}>{CURRENCY_INFO[c].flag} {c}</option>)}
+            {CURRENCIES.filter(c => c !== to).map(c => <option key={c} value={c}>{c}</option>)}
           </select>
         </div>
         <div>
           <label style={labelStyle}>A</label>
           <select value={to} onChange={e => setTo(e.target.value)} style={fieldStyle}>
-            {CURRENCIES.filter(c => c !== from).map(c => <option key={c} value={c}>{CURRENCY_INFO[c].flag} {c}</option>)}
+            {CURRENCIES.filter(c => c !== from).map(c => <option key={c} value={c}>{c}</option>)}
           </select>
         </div>
       </div>
