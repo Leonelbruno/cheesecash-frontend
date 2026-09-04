@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
+import CheeseCashLogo from '../../components/CheeseCashLogo/CheeseCashLogo'
 import './Landing.css'
 
 const API = 'https://cheesecash-back-production.up.railway.app/api'
@@ -12,10 +13,10 @@ const C = {
 
 /* ── Moneda base en USD según getAllRates (que devuelve tasas relativas a USD) ── */
 const CURRENCY_INFO: Record<string, { flagUrl: string; name: string; decimals: number }> = {
-  USD: { flagUrl: 'https://flagcdn.com/w40/us.png', name: 'Dólar',   decimals: 2 },
+  USD: { flagUrl: 'https://flagcdn.com/w40/us.png', name: 'Dólar', decimals: 2 },
   ARS: { flagUrl: 'https://flagcdn.com/w40/ar.png', name: 'Peso AR', decimals: 0 },
-  EUR: { flagUrl: 'https://flagcdn.com/w40/eu.png', name: 'Euro',    decimals: 2 },
-  BTC: { flagUrl: '',                               name: 'Bitcoin', decimals: 6 },
+  EUR: { flagUrl: 'https://flagcdn.com/w40/eu.png', name: 'Euro', decimals: 2 },
+  BTC: { flagUrl: '', name: 'Bitcoin', decimals: 6 },
 }
 
 function CurrencyIcon({ code, size = 18 }: { code: string; size?: number }) {
@@ -23,7 +24,7 @@ function CurrencyIcon({ code, size = 18 }: { code: string; size?: number }) {
   if (code === 'BTC') {
     return (
       <svg width={size} height={size} viewBox="0 0 24 24" fill="#f2d488">
-        <path d="M17.06 11.57c.47-.93.44-2.17-.27-2.93-.52-.57-1.28-.87-2.18-.97V6h-1.5v1.57H12V6h-1.5v1.57H8v1.5h1.25c.41 0 .75.34.75.75v4.36c0 .41-.34.75-.75.75H8v1.5h2.5V18H12v-1.57h1.11V18h1.5v-1.62c1.03-.13 1.88-.52 2.36-1.18.52-.72.57-1.67.09-2.63zM11 9.57h2c.83 0 1.5.57 1.5 1.27s-.67 1.27-1.5 1.27H11V9.57zm2.25 6H11v-2.7h2.25c.97 0 1.75.6 1.75 1.35s-.78 1.35-1.75 1.35z"/>
+        <path d="M17.06 11.57c.47-.93.44-2.17-.27-2.93-.52-.57-1.28-.87-2.18-.97V6h-1.5v1.57H12V6h-1.5v1.57H8v1.5h1.25c.41 0 .75.34.75.75v4.36c0 .41-.34.75-.75.75H8v1.5h2.5V18H12v-1.57h1.11V18h1.5v-1.62c1.03-.13 1.88-.52 2.36-1.18.52-.72.57-1.67.09-2.63zM11 9.57h2c.83 0 1.5.57 1.5 1.27s-.67 1.27-1.5 1.27H11V9.57zm2.25 6H11v-2.7h2.25c.97 0 1.75.6 1.75 1.35s-.78 1.35-1.75 1.35z" />
       </svg>
     )
   }
@@ -32,85 +33,36 @@ function CurrencyIcon({ code, size = 18 }: { code: string; size?: number }) {
 
 const CURRENCIES = ['ARS', 'USD', 'EUR', 'BTC']
 
-/* ── SVGs ── */
-function CheeseCoin({ size = 90 }: { size?: number }) {
-  const id = `lc-${size}`
-  return (
-    <svg width={size} height={size} viewBox="0 0 100 100" className="hero-coin">
-      <defs>
-        <radialGradient id={`rg-${id}`} cx="38%" cy="35%" r="65%">
-          <stop offset="0%"   stopColor="#fbeec0" />
-          <stop offset="55%"  stopColor="#e9bf62" />
-          <stop offset="100%" stopColor="#c4922f" />
-        </radialGradient>
-        <linearGradient id={`lg-${id}`} x1="0%" y1="0%" x2="100%" y2="0%">
-          <stop offset="0%"   stopColor="#8a6416" />
-          <stop offset="50%"  stopColor="#f0cd7a" />
-          <stop offset="100%" stopColor="#8a6416" />
-        </linearGradient>
-      </defs>
-      <circle cx="50" cy="50" r="48" fill={`url(#lg-${id})`} />
-      <circle cx="50" cy="50" r="44" fill={`url(#rg-${id})`} />
-      <ellipse cx="38" cy="42" rx="7"   ry="6"   fill="#8a6010" opacity="0.55" />
-      <ellipse cx="62" cy="38" rx="5"   ry="5.5" fill="#8a6010" opacity="0.5"  />
-      <ellipse cx="55" cy="62" rx="6.5" ry="5.5" fill="#8a6010" opacity="0.52" />
-      <ellipse cx="30" cy="62" rx="5"   ry="4.5" fill="#8a6010" opacity="0.48" />
-      <ellipse cx="70" cy="56" rx="4.5" ry="5"   fill="#8a6010" opacity="0.45" />
-    </svg>
-  )
-}
 
-function NavCoin() {
-  return (
-    <svg width="28" height="28" viewBox="0 0 100 100">
-      <defs>
-        <radialGradient id="rg-nav" cx="38%" cy="35%" r="65%">
-          <stop offset="0%"   stopColor="#fbeec0" />
-          <stop offset="55%"  stopColor="#e9bf62" />
-          <stop offset="100%" stopColor="#c4922f" />
-        </radialGradient>
-        <linearGradient id="lg-nav" x1="0%" y1="0%" x2="100%" y2="0%">
-          <stop offset="0%"   stopColor="#8a6416" />
-          <stop offset="50%"  stopColor="#f0cd7a" />
-          <stop offset="100%" stopColor="#8a6416" />
-        </linearGradient>
-      </defs>
-      <circle cx="50" cy="50" r="48" fill="url(#lg-nav)" />
-      <circle cx="50" cy="50" r="44" fill="url(#rg-nav)" />
-      <ellipse cx="38" cy="42" rx="7"   ry="6"   fill="#8a6010" opacity="0.55" />
-      <ellipse cx="62" cy="38" rx="5"   ry="5.5" fill="#8a6010" opacity="0.5"  />
-    </svg>
-  )
-}
 
 const FEATURES = [
   {
-    icon: <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#f2d488" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><polyline points="17 1 21 5 17 9"/><path d="M3 11V9a4 4 0 014-4h14"/><polyline points="7 23 3 19 7 15"/><path d="M21 13v2a4 4 0 01-4 4H3"/></svg>,
+    icon: <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#f2d488" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><polyline points="17 1 21 5 17 9" /><path d="M3 11V9a4 4 0 014-4h14" /><polyline points="7 23 3 19 7 15" /><path d="M21 13v2a4 4 0 01-4 4H3" /></svg>,
     title: 'Cambio multimoneda',
     desc: 'Operá con ARS, USD, EUR y BTC al instante.',
   },
   {
-    icon: <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#f2d488" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>,
+    icon: <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#f2d488" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><line x1="22" y1="2" x2="11" y2="13" /><polygon points="22 2 15 22 11 13 2 9 22 2" /></svg>,
     title: 'Transferencias instantáneas',
     desc: 'Enviá dinero a contactos en segundos, sin comisiones ocultas.',
   },
   {
-    icon: <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#f2d488" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><polyline points="9 12 11 14 15 10"/></svg>,
+    icon: <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#f2d488" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" /><polyline points="9 12 11 14 15 10" /></svg>,
     title: 'Seguro y confiable',
     desc: 'Protegido con JWT y conexiones cifradas.',
   },
   {
-    icon: <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#f2d488" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>,
+    icon: <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#f2d488" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10" /><polyline points="12 6 12 12 16 14" /></svg>,
     title: 'Historial completo',
     desc: 'Filtrá por tipo: compras, ventas, intercambios y transferencias.',
   },
   {
-    icon: <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#f2d488" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="8" width="18" height="12" rx="3"/><path d="M12 8V4"/><circle cx="12" cy="4" r="1.5" fill="#f2d488" stroke="none"/><circle cx="8.5" cy="14" r="1" fill="#f2d488" stroke="none"/><circle cx="15.5" cy="14" r="1" fill="#f2d488" stroke="none"/><path d="M9 18h6"/></svg>,
+    icon: <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#f2d488" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="8" width="18" height="12" rx="3" /><path d="M12 8V4" /><circle cx="12" cy="4" r="1.5" fill="#f2d488" stroke="none" /><circle cx="8.5" cy="14" r="1" fill="#f2d488" stroke="none" /><circle cx="15.5" cy="14" r="1" fill="#f2d488" stroke="none" /><path d="M9 18h6" /></svg>,
     title: 'Asistente con IA',
     desc: 'Chatbot disponible en todo momento para dudas sobre la plataforma.',
   },
   {
-    icon: <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#f2d488" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><rect x="5" y="2" width="14" height="20" rx="3"/><line x1="12" y1="18" x2="12" y2="18" strokeWidth="2.5" strokeLinecap="round"/></svg>,
+    icon: <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#f2d488" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><rect x="5" y="2" width="14" height="20" rx="3" /><line x1="12" y1="18" x2="12" y2="18" strokeWidth="2.5" strokeLinecap="round" /></svg>,
     title: 'Diseñado para mobile',
     desc: 'Navegación optimizada con barra inferior, igual que las apps que ya usás.',
   },
@@ -128,7 +80,7 @@ function getRate(rates: Record<string, number>, from: string, to: string): numbe
   // rates está en formato "cuántas unidades de X por 1 USD"
   // para ir de from a to: (1/rates[from]) * rates[to]
   const fromUsd = from === 'USD' ? 1 : rates[from]
-  const toUsd   = to   === 'USD' ? 1 : rates[to]
+  const toUsd = to === 'USD' ? 1 : rates[to]
   if (!fromUsd || !toUsd) return 1
   return toUsd / fromUsd
 }
@@ -183,27 +135,27 @@ function RatesSection({ rates }: { rates: Record<string, number> | null }) {
       </div>
 
       <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap', justifyContent: 'center' }}>
-      {CURRENCIES.filter(c => c !== base).map(c => {
-        // Si la base es BTC, mostramos cuánto vale 1 BTC en cada moneda (más legible)
-        const isBtcBase = base === 'BTC'
-        const rate = isBtcBase ? getRate(rates, base, c) : getRate(rates, c, base)
-        const display = isBtcBase ? formatResult(rate, c) : formatResult(rate, base)
-        const label = isBtcBase ? `1 BTC en ${c}` : `1 ${c} en ${base}`
+        {CURRENCIES.filter(c => c !== base).map(c => {
+          // Si la base es BTC, mostramos cuánto vale 1 BTC en cada moneda (más legible)
+          const isBtcBase = base === 'BTC'
+          const rate = isBtcBase ? getRate(rates, base, c) : getRate(rates, c, base)
+          const display = isBtcBase ? formatResult(rate, c) : formatResult(rate, base)
+          const label = isBtcBase ? `1 BTC en ${c}` : `1 ${c} en ${base}`
 
-        return (
-          <div key={c} style={fieldStyle}>
-            <div style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: 11, color: C.muted, marginBottom: 8 }}>
-              {c}
+          return (
+            <div key={c} style={fieldStyle}>
+              <div style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: 11, color: C.muted, marginBottom: 8 }}>
+                {c}
+              </div>
+              <div style={{ fontFamily: 'JetBrains Mono, monospace', fontWeight: 700, fontSize: 20, color: C.gold, lineHeight: 1.2 }}>
+                {display}
+              </div>
+              <div style={{ fontFamily: 'Inter, sans-serif', fontSize: 11, color: C.mutedDark, marginTop: 4 }}>
+                {label}
+              </div>
             </div>
-            <div style={{ fontFamily: 'JetBrains Mono, monospace', fontWeight: 700, fontSize: 20, color: C.gold, lineHeight: 1.2 }}>
-              {display}
-            </div>
-            <div style={{ fontFamily: 'Inter, sans-serif', fontSize: 11, color: C.mutedDark, marginTop: 4 }}>
-              {label}
-            </div>
-          </div>
-        )
-      })}
+          )
+        })}
       </div>
     </div>
   )
@@ -211,11 +163,11 @@ function RatesSection({ rates }: { rates: Record<string, number> | null }) {
 
 /* ── Conversor en la landing ── */
 function ConversorSection({ rates }: { rates: Record<string, number> | null }) {
-  const [from, setFrom]     = useState('USD')
-  const [to, setTo]         = useState('ARS')
+  const [from, setFrom] = useState('USD')
+  const [to, setTo] = useState('ARS')
   const [amount, setAmount] = useState('100')
 
-  const rate   = rates ? getRate(rates, from, to) : 0
+  const rate = rates ? getRate(rates, from, to) : 0
   const result = rates && amount ? (parseFloat(amount.replace(',', '.')) * rate) : null
 
   const fieldStyle: React.CSSProperties = {
@@ -288,7 +240,7 @@ export default function Landing() {
     fetch(`${API}/rates`)
       .then(r => r.json())
       .then(data => setRates(data))
-      .catch(() => {/* silencioso, fallback a null */})
+      .catch(() => {/* silencioso, fallback a null */ })
   }, [])
 
   return (
@@ -297,8 +249,7 @@ export default function Landing() {
       {/* ── Navbar ── */}
       <nav className="landing-nav">
         <div className="landing-nav-logo">
-          <NavCoin />
-          <span className="landing-nav-wordmark">Cheese Cash</span>
+          <CheeseCashLogo size={28} withName />
         </div>
         <div className="landing-nav-actions">
           <a className="btn-outline" onClick={() => navigate('/login')} style={{ cursor: 'pointer' }}>
@@ -313,7 +264,9 @@ export default function Landing() {
       {/* ── Hero ── */}
       <section className="landing-hero">
         <div className="hero-glow" />
-        <CheeseCoin size={100} />
+        <div className="hero-coin">
+          <CheeseCashLogo size={100} />
+        </div>
         <div className="hero-badge">✦ Billetera digital multimoneda</div>
         <h1 className="hero-title">
           Tu dinero en <span>todas las monedas</span> que necesitás
@@ -334,10 +287,10 @@ export default function Landing() {
       {/* ── Stats ── */}
       <div className="landing-stats">
         {[
-          { n: '4',    l: 'Monedas soportadas' },
+          { n: '4', l: 'Monedas soportadas' },
           { n: '100%', l: 'Gratis para usar' },
           { n: '24/7', l: 'Disponibilidad' },
-          { n: '<1s',  l: 'Tiempo de operación' },
+          { n: '<1s', l: 'Tiempo de operación' },
         ].map(s => (
           <div key={s.l} className="stat-item">
             <div className="stat-number">{s.n}</div>
