@@ -9,6 +9,7 @@ import Historial from './pages/Historial/Historial'
 import Conversor from './pages/Conversor/Conversor'
 import Transferir from './pages/Transferir/Transferir'
 import ChatBot from './components/ChatBot/ChatBot'
+import Landing from './pages/Landing/Landing'
 import ConfirmTransaction from './pages/ConfirmTransaction/ConfirmTransaction'
 import ConfirmTransfer from './pages/ConfirmTransfer/ConfirmTransfer'
 
@@ -16,7 +17,7 @@ function App() {
   return (
     <AuthProvider>
       <Routes>
-        <Route path="/" element={<Navigate to="/login" replace />} />
+        <Route path="/" element={<Landing />} />
         <Route path="/confirm-transaction" element={<ConfirmTransaction />} />
         <Route path="/confirm-transfer" element={<ConfirmTransfer />} />
 
