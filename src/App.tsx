@@ -38,7 +38,7 @@ function App() {
           </Route>
         </Route>
 
-        <Route path="*" element={<Navigate to="/login" replace />} />
+        <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
 
       {/* Chatbot flotante */}
