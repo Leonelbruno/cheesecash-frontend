@@ -1,73 +1,163 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
+import { api } from '../../services/api'
+import { CURRENCIES, formatAmount } from '../../services/rates'
 
 const C = {
   card: '#141210', cardBorder: 'rgba(232,196,104,0.14)',
   gold: '#f2d488', goldMid: '#d9a942',
   text: '#f6efdf', muted: '#9a927f', mutedDark: '#5c584c',
+  danger: '#e2705f',
   radius: '18px',
 }
 
-const CURRENCIES = ['ARS', 'USD', 'EUR', 'BTC', 'USDT', 'BRL']
-const CONTACTS = [
-  { id: 'c1', name: 'Valentina López',  alias: '@valen.lopez', avatar: 'V' },
-  { id: 'c2', name: 'Mateo Rodríguez',  alias: '@mateo.rdz',   avatar: 'M' },
-  { id: 'c3', name: 'Lucía Fernández',  alias: '@lucia.fer',   avatar: 'L' },
-  { id: 'c4', name: 'Santiago Gómez',   alias: '@santi.go',    avatar: 'S' },
-]
+interface ApiBalance {
+  id: number
+  wallet_id: number
+  currency: string
+  amount: string
+}
+
+interface ApiTransfer {
+  id: number
+  from_wallet_id: number
+  to_wallet_id: number
+  currency: string
+  amount: number
+  status: string
+  created_at: string
+}
 
 const fieldStyle: React.CSSProperties = {
   width: '100%', padding: '12px 14px', boxSizing: 'border-box',
-  background: '#0f0d0b', border: `1px solid rgba(232,196,104,0.14)`, borderRadius: 10,
-  color: '#f6efdf', fontFamily: 'Inter, sans-serif', fontSize: 14, outline: 'none',
+  background: '#0f0d0b', border: `1px solid ${C.cardBorder}`, borderRadius: 10,
+  color: C.text, fontFamily: 'Inter, sans-serif', fontSize: 14, outline: 'none',
 }
 const labelStyle: React.CSSProperties = {
   fontFamily: 'JetBrains Mono, monospace', fontSize: 10,
-  textTransform: 'uppercase' as const, letterSpacing: 3, color: '#9a927f',
+  textTransform: 'uppercase', letterSpacing: 3, color: C.muted,
   display: 'block', marginBottom: 6,
+}
+const microStyle: React.CSSProperties = {
+  fontFamily: 'JetBrains Mono, monospace', fontSize: 10,
+  textTransform: 'uppercase', letterSpacing: 3, color: C.muted,
 }
 
 export default function Transferir() {
   const navigate = useNavigate()
-  const [step, setStep]         = useState<'recipient' | 'amount' | 'done'>('recipient')
-  const [selected, setSelected] = useState<typeof CONTACTS[0] | null>(null)
+
+  const [toEmail, setToEmail] = useState('')
   const [currency, setCurrency] = useState('ARS')
-  const [amount, setAmount]     = useState('')
-  const [note, setNote]         = useState('')
-  const [search, setSearch]     = useState('')
+  const [amount, setAmount] = useState('')
 
-  const filtered = CONTACTS.filter(c =>
-    c.name.toLowerCase().includes(search.toLowerCase()) || c.alias.includes(search)
-  )
+  const [balances, setBalances] = useState<ApiBalance[]>([])
+  const [submitting, setSubmitting] = useState(false)
+  const [error, setError] = useState('')
+  const [result, setResult] = useState<ApiTransfer | null>(null)
 
-  if (step === 'done') {
+  useEffect(() => {
+    let cancelled = false
+
+    api
+      .get<ApiBalance[]>('/wallet/balances')
+      .then(data => { if (!cancelled) setBalances(Array.isArray(data) ? data : []) })
+      .catch(() => { if (!cancelled) setBalances([]) })
+
+    return () => { cancelled = true }
+  }, [])
+
+  const numericAmount = parseFloat(amount.replace(',', '.'))
+  const hasAmount = !Number.isNaN(numericAmount) && numericAmount > 0
+
+  const balance = balances.find(b => b.currency === currency)
+  const available = balance ? parseFloat(balance.amount) : 0
+  const insufficient = hasAmount && numericAmount > available
+
+  const emailOk = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(toEmail.trim())
+  const canSubmit = emailOk && hasAmount && !insufficient && !submitting
+
+  async function handleSubmit() {
+    if (!canSubmit) return
+    setSubmitting(true)
+    setError('')
+
+    try {
+      const transfer = await api.post<ApiTransfer>('/transfers', {
+        toEmail: toEmail.trim(),
+        currency,
+        amount: numericAmount,
+      })
+      setResult(transfer)
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'No pudimos enviar la transferencia')
+    } finally {
+      setSubmitting(false)
+    }
+  }
+
+  // --- Monto alto: queda pendiente de confirmación por mail ---
+  if (result && result.status === 'pending') {
+    return (
+      <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center', gap: 24, maxWidth: 420, margin: '40px auto 0' }}>
+        <div style={{ width: 96, height: 96, borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(242,212,136,0.08)', border: `2px solid ${C.cardBorder}` }}>
+          <svg width="44" height="44" viewBox="0 0 24 24" fill="none" stroke={C.gold} strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+            <rect x="2" y="4" width="20" height="16" rx="2" />
+            <path d="m22 7-10 6L2 7" />
+          </svg>
+        </div>
+        <div>
+          <h2 style={{ fontFamily: 'Poppins, sans-serif', fontWeight: 700, fontSize: 24, color: C.text, margin: 0 }}>Confirmá por email</h2>
+          <p style={{ fontFamily: 'Inter, sans-serif', fontSize: 14, color: C.muted, marginTop: 8, lineHeight: 1.5 }}>
+            Por el monto de la transferencia te enviamos un link de confirmación a
+            tu correo. Tu saldo todavía no se modificó. El link vence en 2 horas.
+          </p>
+        </div>
+        <div style={{ width: '100%', background: C.card, border: `1px solid ${C.cardBorder}`, borderRadius: C.radius, padding: 24, textAlign: 'left', display: 'flex', flexDirection: 'column', gap: 14 }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', gap: 12 }}>
+            <span style={microStyle}>Para</span>
+            <span style={{ fontFamily: 'Inter, sans-serif', fontSize: 13, color: C.text, wordBreak: 'break-all' }}>{toEmail}</span>
+          </div>
+          <div style={{ height: 1, background: C.cardBorder }} />
+          <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+            <span style={microStyle}>Monto</span>
+            <span style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: 13, color: C.gold, fontWeight: 700 }}>
+              {formatAmount(result.currency, Number(result.amount))} {result.currency}
+            </span>
+          </div>
+        </div>
+        <button onClick={() => navigate('/dashboard')} style={{ width: '100%', padding: '14px 0', borderRadius: 12, border: `1px solid ${C.cardBorder}`, background: 'transparent', color: C.text, fontFamily: 'Poppins, sans-serif', fontWeight: 700, fontSize: 15, cursor: 'pointer' }}>
+          Volver al inicio
+        </button>
+      </div>
+    )
+  }
+
+  // --- Transferencia enviada ---
+  if (result) {
     return (
       <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center', gap: 24, maxWidth: 420, margin: '40px auto 0' }}>
         <div style={{ width: 96, height: 96, borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(242,212,136,0.08)', border: '2px solid rgba(242,212,136,0.3)' }}>
           <svg width="48" height="48" viewBox="0 0 48 48" fill="none">
-            <circle cx="24" cy="24" r="22" stroke={C.gold} strokeWidth="2"/>
-            <polyline points="14 24 21 31 34 18" stroke={C.gold} strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"/>
+            <circle cx="24" cy="24" r="22" stroke={C.gold} strokeWidth="2" />
+            <polyline points="14 24 21 31 34 18" stroke={C.gold} strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />
           </svg>
         </div>
         <div>
           <h2 style={{ fontFamily: 'Poppins, sans-serif', fontWeight: 700, fontSize: 24, color: C.text, margin: 0 }}>¡Transferencia enviada!</h2>
-          <p style={{ fontFamily: 'Inter, sans-serif', fontSize: 14, color: C.muted, marginTop: 6 }}>Tu transferencia fue procesada con éxito</p>
+          <p style={{ fontFamily: 'Inter, sans-serif', fontSize: 14, color: C.muted, marginTop: 6 }}>El dinero ya está en la cuenta del destinatario</p>
         </div>
         <div style={{ width: '100%', background: C.card, border: `1px solid ${C.cardBorder}`, borderRadius: C.radius, padding: 24, textAlign: 'left', display: 'flex', flexDirection: 'column', gap: 16 }}>
-          {[
-            ['Destinatario', selected?.name ?? ''],
-            ['Alias', selected?.alias ?? ''],
-            ['Monto', `${amount} ${currency}`],
-            ['Nota', note || '—'],
-          ].map(([label, val], i, arr) => (
-            <div key={i}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                <span style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: 10, textTransform: 'uppercase', letterSpacing: 3, color: C.muted }}>{label}</span>
-                <span style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: 13, color: i === 2 ? C.gold : C.text, fontWeight: i === 2 ? 700 : 500 }}>{val}</span>
-              </div>
-              {i < arr.length - 1 && <div style={{ height: 1, background: C.cardBorder, marginTop: 16 }} />}
-            </div>
-          ))}
+          <div style={{ display: 'flex', justifyContent: 'space-between', gap: 12 }}>
+            <span style={microStyle}>Para</span>
+            <span style={{ fontFamily: 'Inter, sans-serif', fontSize: 13, color: C.text, wordBreak: 'break-all' }}>{toEmail}</span>
+          </div>
+          <div style={{ height: 1, background: C.cardBorder }} />
+          <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+            <span style={microStyle}>Monto</span>
+            <span style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: 13, color: C.gold, fontWeight: 700 }}>
+              {formatAmount(result.currency, Number(result.amount))} {result.currency}
+            </span>
+          </div>
         </div>
         <button onClick={() => navigate('/dashboard')} style={{ width: '100%', padding: '14px 0', borderRadius: 12, border: 'none', background: `linear-gradient(135deg, ${C.gold}, ${C.goldMid})`, color: '#161311', fontFamily: 'Poppins, sans-serif', fontWeight: 700, fontSize: 15, cursor: 'pointer' }}>
           Volver al inicio
@@ -76,99 +166,79 @@ export default function Transferir() {
     )
   }
 
+  // --- Formulario ---
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 24, maxWidth: 460 }}>
-      <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-        {step === 'amount' && (
-          <button onClick={() => setStep('recipient')} style={{ width: 36, height: 36, display: 'flex', alignItems: 'center', justifyContent: 'center', background: C.card, border: `1px solid ${C.cardBorder}`, borderRadius: 10, color: C.muted, cursor: 'pointer', fontSize: 20, flexShrink: 0 }}>
-            ‹
-          </button>
-        )}
-        <div>
-          <h2 style={{ fontFamily: 'Poppins, sans-serif', fontWeight: 700, fontSize: 24, color: C.text, margin: 0 }}>Transferir</h2>
-          <p style={{ fontFamily: 'Inter, sans-serif', fontSize: 14, color: C.muted, marginTop: 4 }}>
-            {step === 'recipient' ? 'Elegí a quién enviarle' : `Enviando a ${selected?.name}`}
-          </p>
-        </div>
+      <div>
+        <h2 style={{ fontFamily: 'Poppins, sans-serif', fontWeight: 700, fontSize: 24, color: C.text, margin: 0 }}>Transferir</h2>
+        <p style={{ fontFamily: 'Inter, sans-serif', fontSize: 14, color: C.muted, marginTop: 4 }}>Enviá dinero a otra cuenta de Cheese Cash</p>
       </div>
 
-      {step === 'recipient' && (
-        <>
-          <div style={{ position: 'relative' }}>
-            <span style={{ position: 'absolute', left: 12, top: '50%', transform: 'translateY(-50%)', color: C.mutedDark, fontSize: 16 }}>⌕</span>
-            <input value={search} onChange={e => setSearch(e.target.value)} placeholder="Buscar por nombre o alias..." style={{ ...fieldStyle, paddingLeft: 36 }} />
-          </div>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-            <p style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: 10, textTransform: 'uppercase', letterSpacing: 4, color: C.muted, margin: 0 }}>Contactos frecuentes</p>
-            {filtered.map(c => (
-              <button key={c.id} onClick={() => { setSelected(c); setStep('amount') }} style={{ display: 'flex', alignItems: 'center', gap: 16, padding: '14px 16px', background: C.card, border: `1px solid ${C.cardBorder}`, borderRadius: 14, cursor: 'pointer', textAlign: 'left', width: '100%', transition: 'transform 0.15s' }}
-                onMouseEnter={e => (e.currentTarget.style.transform = 'translateY(-2px)')}
-                onMouseLeave={e => (e.currentTarget.style.transform = 'translateY(0)')}>
-                <div style={{ width: 40, height: 40, borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(242,212,136,0.1)', border: '1px solid rgba(242,212,136,0.25)', color: C.gold, fontFamily: 'Poppins, sans-serif', fontWeight: 700, fontSize: 16, flexShrink: 0 }}>
-                  {c.avatar}
-                </div>
-                <div style={{ flex: 1 }}>
-                  <div style={{ fontFamily: 'Inter, sans-serif', fontWeight: 600, fontSize: 14, color: C.text }}>{c.name}</div>
-                  <div style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: 11, color: C.muted }}>{c.alias}</div>
-                </div>
-                <span style={{ color: C.mutedDark, fontSize: 20 }}>›</span>
-              </button>
-            ))}
-          </div>
-        </>
-      )}
-
-      {step === 'amount' && selected && (
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
-          {/* Recipient card */}
-          <div style={{ display: 'flex', alignItems: 'center', gap: 16, padding: '16px', background: C.card, border: '1px solid rgba(242,212,136,0.25)', borderRadius: 14 }}>
-            <div style={{ width: 44, height: 44, borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(242,212,136,0.1)', border: '1px solid rgba(242,212,136,0.25)', color: C.gold, fontFamily: 'Poppins, sans-serif', fontWeight: 700, fontSize: 18, flexShrink: 0 }}>
-              {selected.avatar}
-            </div>
-            <div>
-              <div style={{ fontFamily: 'Inter, sans-serif', fontWeight: 600, fontSize: 14, color: C.text }}>{selected.name}</div>
-              <div style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: 11, color: C.muted }}>{selected.alias} · Cheese Cash</div>
-            </div>
-            <div style={{ marginLeft: 'auto', width: 20, height: 20, borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', background: `linear-gradient(135deg, ${C.gold}, ${C.goldMid})` }}>
-              <span style={{ color: '#161311', fontSize: 10 }}>✓</span>
-            </div>
-          </div>
-
-          {/* Form */}
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 20, background: C.card, border: `1px solid ${C.cardBorder}`, borderRadius: C.radius, padding: 24 }}>
-            <div>
-              <label style={labelStyle}>Moneda</label>
-              <select value={currency} onChange={e => setCurrency(e.target.value)} style={fieldStyle}>
-                {CURRENCIES.map(c => <option key={c}>{c}</option>)}
-              </select>
-            </div>
-            <div>
-              <label style={labelStyle}>Monto</label>
-              <input type="number" placeholder="0.00" value={amount} onChange={e => setAmount(e.target.value)} style={fieldStyle} />
-            </div>
-            <div>
-              <label style={labelStyle}>Nota (opcional)</label>
-              <input type="text" placeholder="Ej: Para la cena del sábado" value={note} onChange={e => setNote(e.target.value)} style={fieldStyle} />
-            </div>
-
-            {amount && parseFloat(amount) > 0 && (
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '12px 16px', background: '#0f0d0b', border: '1px solid rgba(242,212,136,0.2)', borderRadius: 12 }}>
-                <span style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: 10, textTransform: 'uppercase', letterSpacing: 3, color: C.muted }}>Recibirá</span>
-                <span style={{ fontFamily: 'JetBrains Mono, monospace', fontWeight: 700, fontSize: 20, color: C.gold }}>
-                  {parseFloat(amount).toLocaleString('es-AR', { minimumFractionDigits: 2 })} {currency}
-                </span>
-              </div>
-            )}
-
-            <button
-              onClick={() => setStep('done')}
-              disabled={!amount || parseFloat(amount) <= 0}
-              style={{ padding: '14px 0', borderRadius: 12, border: 'none', background: !amount || parseFloat(amount) <= 0 ? 'rgba(242,212,136,0.2)' : `linear-gradient(135deg, ${C.gold}, ${C.goldMid})`, color: !amount || parseFloat(amount) <= 0 ? C.mutedDark : '#161311', fontFamily: 'Poppins, sans-serif', fontWeight: 700, fontSize: 15, cursor: !amount || parseFloat(amount) <= 0 ? 'not-allowed' : 'pointer' }}>
-              Transferir ahora
-            </button>
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 20, background: C.card, border: `1px solid ${C.cardBorder}`, borderRadius: C.radius, padding: 24 }}>
+        <div>
+          <label htmlFor="tr-email" style={labelStyle}>Email del destinatario</label>
+          <input
+            id="tr-email"
+            type="email"
+            autoComplete="off"
+            placeholder="nombre@correo.com"
+            value={toEmail}
+            onChange={e => setToEmail(e.target.value)}
+            style={fieldStyle}
+          />
+          <div style={{ ...microStyle, marginTop: 6, letterSpacing: 1, textTransform: 'none', fontSize: 11 }}>
+            Tiene que tener una cuenta en Cheese Cash
           </div>
         </div>
-      )}
+
+        <div>
+          <label htmlFor="tr-currency" style={labelStyle}>Moneda</label>
+          <select id="tr-currency" value={currency} onChange={e => setCurrency(e.target.value)} style={fieldStyle}>
+            {CURRENCIES.map(c => <option key={c}>{c}</option>)}
+          </select>
+          <div style={{ ...microStyle, marginTop: 6 }}>
+            Disponible: {formatAmount(currency, available)} {currency}
+          </div>
+        </div>
+
+        <div>
+          <label htmlFor="tr-amount" style={labelStyle}>Monto</label>
+          <input
+            id="tr-amount"
+            type="number"
+            min="0"
+            step="any"
+            placeholder={`0.00 ${currency}`}
+            value={amount}
+            onChange={e => setAmount(e.target.value)}
+            style={{ ...fieldStyle, borderColor: insufficient ? C.danger : C.cardBorder }}
+          />
+          {insufficient && (
+            <div style={{ fontFamily: 'Inter, sans-serif', fontSize: 12, color: C.danger, marginTop: 6 }}>
+              No te alcanza el saldo en {currency}
+            </div>
+          )}
+        </div>
+
+        {error && (
+          <div role="alert" style={{ padding: '12px 14px', borderRadius: 10, background: 'rgba(226,112,95,0.1)', border: `1px solid ${C.danger}`, color: C.danger, fontFamily: 'Inter, sans-serif', fontSize: 13 }}>
+            {error}
+          </div>
+        )}
+
+        <button
+          onClick={handleSubmit}
+          disabled={!canSubmit}
+          style={{
+            padding: '14px 0', borderRadius: 12, border: 'none',
+            background: !canSubmit ? 'rgba(242,212,136,0.2)' : `linear-gradient(135deg, ${C.gold}, ${C.goldMid})`,
+            color: !canSubmit ? C.mutedDark : '#161311',
+            fontFamily: 'Poppins, sans-serif', fontWeight: 700, fontSize: 15,
+            cursor: !canSubmit ? 'not-allowed' : 'pointer',
+          }}>
+          {submitting ? 'Enviando…' : 'Enviar transferencia'}
+        </button>
+      </div>
     </div>
   )
 }

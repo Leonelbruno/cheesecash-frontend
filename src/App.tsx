@@ -10,6 +10,7 @@ import Conversor from './pages/Conversor/Conversor'
 import Transferir from './pages/Transferir/Transferir'
 import ChatBot from './components/ChatBot/ChatBot'
 import ConfirmTransaction from './pages/ConfirmTransaction/ConfirmTransaction'
+import ConfirmTransfer from './pages/ConfirmTransfer/ConfirmTransfer'
 
 function App() {
   return (
@@ -17,6 +18,7 @@ function App() {
       <Routes>
         <Route path="/" element={<Navigate to="/login" replace />} />
         <Route path="/confirm-transaction" element={<ConfirmTransaction />} />
+        <Route path="/confirm-transfer" element={<ConfirmTransfer />} />
 
         {/* Rutas públicas */}
         <Route element={<PublicRoute />}>
