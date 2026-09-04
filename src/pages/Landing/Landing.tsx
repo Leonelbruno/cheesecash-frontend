@@ -11,11 +11,23 @@ const C = {
 }
 
 /* ── Moneda base en USD según getAllRates (que devuelve tasas relativas a USD) ── */
-const CURRENCY_INFO: Record<string, { flag: string; name: string; decimals: number }> = {
-  USD: { flag: '🇺🇸', name: 'Dólar',   decimals: 2 },
-  ARS: { flag: '🇦🇷', name: 'Peso AR', decimals: 0 },
-  EUR: { flag: '🇪🇺', name: 'Euro',    decimals: 2 },
-  BTC: { flag: '₿',   name: 'Bitcoin', decimals: 6 },
+const CURRENCY_INFO: Record<string, { flagUrl: string; name: string; decimals: number }> = {
+  USD: { flagUrl: 'https://flagcdn.com/w40/us.png', name: 'Dólar',   decimals: 2 },
+  ARS: { flagUrl: 'https://flagcdn.com/w40/ar.png', name: 'Peso AR', decimals: 0 },
+  EUR: { flagUrl: 'https://flagcdn.com/w40/eu.png', name: 'Euro',    decimals: 2 },
+  BTC: { flagUrl: '',                               name: 'Bitcoin', decimals: 6 },
+}
+
+function CurrencyIcon({ code, size = 18 }: { code: string; size?: number }) {
+  const info = CURRENCY_INFO[code]
+  if (code === 'BTC') {
+    return (
+      <svg width={size} height={size} viewBox="0 0 24 24" fill="#f2d488">
+        <path d="M17.06 11.57c.47-.93.44-2.17-.27-2.93-.52-.57-1.28-.87-2.18-.97V6h-1.5v1.57H12V6h-1.5v1.57H8v1.5h1.25c.41 0 .75.34.75.75v4.36c0 .41-.34.75-.75.75H8v1.5h2.5V18H12v-1.57h1.11V18h1.5v-1.62c1.03-.13 1.88-.52 2.36-1.18.52-.72.57-1.67.09-2.63zM11 9.57h2c.83 0 1.5.57 1.5 1.27s-.67 1.27-1.5 1.27H11V9.57zm2.25 6H11v-2.7h2.25c.97 0 1.75.6 1.75 1.35s-.78 1.35-1.75 1.35z"/>
+      </svg>
+    )
+  }
+  return <img src={info.flagUrl} alt={code} width={size * 1.4} height={size} style={{ objectFit: 'cover', borderRadius: 2 }} />
 }
 
 const CURRENCIES = ['ARS', 'USD', 'EUR', 'BTC']
@@ -142,9 +154,7 @@ function RatesSection({ rates }: { rates: Record<string, number> | null }) {
       <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap', justifyContent: 'center' }}>
         {CURRENCIES.map(c => (
           <div key={c} style={{ ...fieldStyle, opacity: 0.4 }}>
-            <div style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: 11, color: C.muted, marginBottom: 8 }}>
-              {CURRENCY_INFO[c].flag} {c}
-            </div>
+            <div style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: 11, color: C.muted, marginBottom: 8 }}>{c}</div>
             <div style={{ fontFamily: 'JetBrains Mono, monospace', fontWeight: 700, fontSize: 22, color: C.gold }}>—</div>
           </div>
         ))}
@@ -159,6 +169,7 @@ function RatesSection({ rates }: { rates: Record<string, number> | null }) {
         <span style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: 11, color: C.muted }}>Ver en</span>
         {CURRENCIES.map(c => (
           <button key={c} onClick={() => setBase(c)} style={{
+            display: 'flex', alignItems: 'center', gap: 5,
             padding: '5px 12px', borderRadius: 8, cursor: 'pointer',
             border: `1px solid ${base === c ? C.goldMid : C.cardBorder}`,
             background: base === c ? `linear-gradient(135deg, ${C.gold}, ${C.goldMid})` : 'transparent',
@@ -166,7 +177,7 @@ function RatesSection({ rates }: { rates: Record<string, number> | null }) {
             fontFamily: 'JetBrains Mono, monospace', fontWeight: 600, fontSize: 12,
             transition: 'all 0.15s',
           }}>
-            {CURRENCY_INFO[c].flag} {c}
+            <CurrencyIcon code={c} size={14} /> {c}
           </button>
         ))}
       </div>
@@ -182,7 +193,7 @@ function RatesSection({ rates }: { rates: Record<string, number> | null }) {
         return (
           <div key={c} style={fieldStyle}>
             <div style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: 11, color: C.muted, marginBottom: 8 }}>
-              {CURRENCY_INFO[c].flag} {c}
+              {c}
             </div>
             <div style={{ fontFamily: 'JetBrains Mono, monospace', fontWeight: 700, fontSize: 20, color: C.gold, lineHeight: 1.2 }}>
               {display}
