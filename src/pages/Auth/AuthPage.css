@@ -326,37 +326,7 @@
 .btn-submit:active { transform: translateY(0); }
 .btn-submit:disabled { opacity: 0.7; cursor: not-allowed; transform: none; }
 
-/* ── Divider ── */
-.divider {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  margin: 22px 0;
-  color: var(--muted);
-  font-size: 11.5px;
-}
-.divider::before, .divider::after {
-  content: '';
-  flex: 1;
-  height: 1px;
-  background: var(--card-border);
-}
 
-/* ── Social buttons ── */
-.btn-social {
-  flex: 1;
-  padding: 12px 0;
-  border: 1px solid var(--card-border);
-  border-radius: 12px;
-  background: var(--card);
-  color: var(--cream);
-  font-family: 'Inter', sans-serif;
-  font-weight: 500;
-  font-size: 13.5px;
-  cursor: pointer;
-  transition: border-color 0.2s ease;
-}
-.btn-social:hover { border-color: rgba(232, 196, 104, 0.35); }
 
 /* ── Footer note ── */
 .foot-note {
@@ -392,11 +362,6 @@
   .mobile-logo { display: flex; }
 }
 
-.google-btn-wrap {
-  display: flex;
-  justify-content: center;
-  margin-bottom: 14px;
-}
 
 .field-hint {
   display: block;

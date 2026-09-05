@@ -1,9 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
 import { useLocation, useNavigate } from 'react-router-dom'
-// SPRINT 2: login con Google deshabilitado temporalmente.
-// Para reactivarlo: descomentar este import, el bloque del formulario
-// más abajo, loginWithGoogle en useAuth y handleGoogleSuccess.
-// import { GoogleLogin } from '@react-oauth/google'
 import { useAuth } from '../../context/useAuth'
 import Toast from '../../components/Toast/Toast'
 import CheeseCashLogo from '../../components/CheeseCashLogo/CheeseCashLogo'
@@ -64,7 +60,6 @@ function Holes() {
 export default function AuthPage() {
   const location = useLocation()
   const navigate = useNavigate()
-  // SPRINT 2: agregar de nuevo loginWithGoogle al reactivar el botón
   const { login, register } = useAuth()
 
   const isRegister = location.pathname === '/register'
@@ -169,23 +164,6 @@ export default function AuthPage() {
     }
   }
 
-  // SPRINT 2: handler del login con Google. Se reactiva junto con el botón.
-  // const handleGoogleSuccess = async (credential?: string) => {
-  //   if (!credential) {
-  //     setError('No se pudo iniciar sesión con Google')
-  //     return
-  //   }
-  //
-  //   try {
-  //     setError('')
-  //     setLoading(true)
-  //     await loginWithGoogle(credential)
-  //     navigate('/dashboard', { replace: true })
-  //   } catch (err) {
-  //     setError((err as Error).message)
-  //     setLoading(false)
-  //   }
-  // }
 
   const passwordsMismatch =
     isRegister && confirmPassword.length > 0 && password !== confirmPassword
@@ -339,18 +317,6 @@ export default function AuthPage() {
               </button>
             </form>
 
-            {/* SPRINT 2: botón de Google oculto — descomentar para reactivar
-            <div className="divider">o continuá con</div>
-
-            <div className="google-btn-wrap">
-              <GoogleLogin
-                onSuccess={(res) => handleGoogleSuccess(res.credential)}
-                onError={() => setError('No se pudo iniciar sesión con Google')}
-                text={isRegister ? 'signup_with' : 'signin_with'}
-                width="320"
-              />
-            </div>
-            */}
 
             <p className="foot-note">
               {isRegister
