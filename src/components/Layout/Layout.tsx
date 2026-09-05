@@ -1,34 +1,7 @@
 import { NavLink, Outlet, useNavigate } from 'react-router-dom'
 import { useAuth } from '../../context/useAuth'
+import CheeseCashLogo from '../CheeseCashLogo/CheeseCashLogo'
 import './Layout.css'
-
-/* ── CheeseCoin SVG ── */
-function CheeseCoin({ size = 34 }: { size?: number }) {
-  const id = `cc-${size}`
-  return (
-    <svg width={size} height={size} viewBox="0 0 100 100" style={{ flexShrink: 0 }}>
-      <defs>
-        <radialGradient id={`rg-${id}`} cx="38%" cy="35%" r="65%">
-          <stop offset="0%" stopColor="#fbeec0" />
-          <stop offset="55%" stopColor="#e9bf62" />
-          <stop offset="100%" stopColor="#c4922f" />
-        </radialGradient>
-        <linearGradient id={`lg-${id}`} x1="0%" y1="0%" x2="100%" y2="0%">
-          <stop offset="0%" stopColor="#8a6416" />
-          <stop offset="50%" stopColor="#f0cd7a" />
-          <stop offset="100%" stopColor="#8a6416" />
-        </linearGradient>
-      </defs>
-      <circle cx="50" cy="50" r="48" fill={`url(#lg-${id})`} />
-      <circle cx="50" cy="50" r="44" fill={`url(#rg-${id})`} />
-      <ellipse cx="38" cy="42" rx="7" ry="6" fill="#8a6010" opacity="0.55" />
-      <ellipse cx="62" cy="38" rx="5" ry="5.5" fill="#8a6010" opacity="0.5" />
-      <ellipse cx="55" cy="62" rx="6.5" ry="5.5" fill="#8a6010" opacity="0.52" />
-      <ellipse cx="30" cy="62" rx="5" ry="4.5" fill="#8a6010" opacity="0.48" />
-      <ellipse cx="70" cy="56" rx="4.5" ry="5" fill="#8a6010" opacity="0.45" />
-    </svg>
-  )
-}
 
 /* ── SVG Icons ── */
 function IconHome({ active }: { active: boolean }) {
@@ -137,7 +110,7 @@ export default function Layout() {
       {/* Header (solo mobile) */}
       <header className="mobile-header">
         <div className="mobile-header-brand">
-          <CheeseCoin size={28} />
+          <CheeseCashLogo size={28} />
           <span className="wordmark wordmark--gradient">Cheese Cash</span>
         </div>
 
@@ -159,7 +132,7 @@ export default function Layout() {
 
         {/* Logo */}
         <div className="sidebar-logo">
-          <CheeseCoin size={34} />
+          <CheeseCashLogo size={34} />
           <div className="logo-divider" />
           <span className="wordmark wordmark--gradient">Cheese Cash</span>
         </div>
