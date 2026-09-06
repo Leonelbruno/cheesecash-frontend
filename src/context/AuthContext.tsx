@@ -43,15 +43,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     setUser(mapUser(user))
   }
 
-  async function loginWithGoogle(googleToken: string) {
-    const { token, user } = await api.post<{ token: string; user: ApiUser }>(
-      '/auth/google',
-      { idToken: googleToken },
-      { auth: false },
-    )
-    localStorage.setItem(TOKEN_KEY, token)
-    setUser(mapUser(user))
-  }
 
   async function register(
     email: string,
@@ -73,7 +64,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   return (
     <AuthContext.Provider
-      value={{ user, loading, login, loginWithGoogle, register, logout }}
+      value={{ user, loading, login, register, logout }}
     >
       {children}
     </AuthContext.Provider>

@@ -11,7 +11,6 @@ function makeCtx(over: Partial<AuthContextType>): AuthContextType {
     user: null,
     loading: false,
     login: noop,
-    loginWithGoogle: noop,
     register: noop,
     logout: () => {},
     ...over,
