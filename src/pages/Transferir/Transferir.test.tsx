@@ -160,4 +160,39 @@ describe('Transferir', () => {
     expect(screen.getByRole('button', { name: /enviar transferencia/i })).toBeDisabled()
     expect(mockPost).not.toHaveBeenCalled()
   })
+
+  it('el boton "Transferir todo" completa el monto con el saldo disponible', async () => {
+    renderT()
+    await screen.findByText(/disponible/i)
+
+    await userEvent.click(screen.getByRole('button', { name: /transferir todo/i }))
+
+    expect(screen.getByLabelText('Monto')).toHaveValue(50000)
+    expect(screen.queryByText(/no te alcanza el saldo/i)).not.toBeInTheDocument()
+  })
+
+  it('toma el saldo de la moneda que este elegida', async () => {
+    renderT()
+    await screen.findByText(/disponible/i)
+
+    await userEvent.selectOptions(screen.getByLabelText('Moneda'), 'USD')
+    await userEvent.click(screen.getByRole('button', { name: /transferir todo/i }))
+
+    expect(screen.getByLabelText('Monto')).toHaveValue(100)
+  })
+
+  it('deshabilita "Transferir todo" cuando no hay saldo', async () => {
+    mockGet.mockImplementation((path: string) => {
+      if (path === '/wallet/balances') {
+        return Promise.resolve([{ id: 1, wallet_id: 1, currency: 'ARS', amount: '0.00' }])
+      }
+      if (path === '/users/me/pin') return Promise.resolve({ pin: 'A1B2C3' })
+      return Promise.reject(new Error(`sin stub para ${path}`))
+    })
+
+    renderT()
+    await screen.findByText(/disponible/i)
+
+    expect(screen.getByRole('button', { name: /transferir todo/i })).toBeDisabled()
+  })
 })

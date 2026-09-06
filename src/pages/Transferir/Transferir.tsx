@@ -295,7 +295,23 @@ export default function Transferir() {
         </div>
 
         <div>
-          <label htmlFor="tr-amount" style={labelStyle}>Monto</label>
+          <div style={{ display: 'flex', alignItems: 'baseline', gap: 10, marginBottom: 6 }}>
+            <label htmlFor="tr-amount" style={{ ...labelStyle, marginBottom: 0 }}>Monto</label>
+            <button
+              type="button"
+              onClick={() => setAmount(String(available))}
+              disabled={available <= 0}
+              style={{
+                marginLeft: 'auto', padding: '3px 10px', borderRadius: 7,
+                border: `1px solid ${C.cardBorder}`, background: 'transparent',
+                color: available <= 0 ? C.mutedDark : C.goldMid,
+                fontFamily: 'JetBrains Mono, monospace', fontSize: 10,
+                textTransform: 'uppercase', letterSpacing: 1.5,
+                cursor: available <= 0 ? 'not-allowed' : 'pointer',
+              }}>
+              Transferir todo
+            </button>
+          </div>
           <input
             id="tr-amount"
             type="number"
