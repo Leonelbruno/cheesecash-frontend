@@ -24,7 +24,11 @@ function renderT() {
 describe('Transferir', () => {
   beforeEach(() => {
     vi.clearAllMocks()
-    mockGet.mockResolvedValue(balances)
+    mockGet.mockImplementation((path: string) => {
+      if (path === '/wallet/balances') return Promise.resolve(balances)
+      if (path === '/users/me/pin') return Promise.resolve({ pin: 'A1B2C3' })
+      return Promise.reject(new Error(`sin stub para ${path}`))
+    })
   })
 
   it('muestra el saldo disponible de la moneda elegida', async () => {
@@ -114,5 +118,46 @@ describe('Transferir', () => {
     expect(await screen.findByText(/confirmá por email/i)).toBeInTheDocument()
     expect(screen.getByText(/tu saldo todavía no se modificó/i)).toBeInTheDocument()
     expect(screen.queryByText(/transferencia enviada/i)).not.toBeInTheDocument()
+  })
+
+  it('muestra el PIN propio para compartir', async () => {
+    renderT()
+
+    expect(await screen.findByText('A1B2C3')).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: /copiar/i })).toBeInTheDocument()
+  })
+
+  it('permite cambiar a modo PIN y manda toPin en vez de toEmail', async () => {
+    mockPost.mockResolvedValue({
+      id: 3, from_wallet_id: 1, to_wallet_id: 2,
+      currency: 'ARS', amount: 2000, status: 'success',
+      created_at: '2026-09-05T00:00:00Z',
+    })
+
+    renderT()
+    await screen.findByText(/disponible/i)
+
+    await userEvent.click(screen.getByRole('button', { name: 'PIN' }))
+    await userEvent.type(screen.getByLabelText(/pin del destinatario/i), 'z9y8x7')
+    await userEvent.type(screen.getByLabelText('Monto'), '2000')
+    await userEvent.click(screen.getByRole('button', { name: /enviar transferencia/i }))
+
+    expect(mockPost).toHaveBeenCalledWith('/transfers', {
+      toPin: 'Z9Y8X7',
+      currency: 'ARS',
+      amount: 2000,
+    })
+  })
+
+  it('no deja enviar con un PIN incompleto', async () => {
+    renderT()
+    await screen.findByText(/disponible/i)
+
+    await userEvent.click(screen.getByRole('button', { name: 'PIN' }))
+    await userEvent.type(screen.getByLabelText(/pin del destinatario/i), 'A1B')
+    await userEvent.type(screen.getByLabelText('Monto'), '1000')
+
+    expect(screen.getByRole('button', { name: /enviar transferencia/i })).toBeDisabled()
+    expect(mockPost).not.toHaveBeenCalled()
   })
 })
