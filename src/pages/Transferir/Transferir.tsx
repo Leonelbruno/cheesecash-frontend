@@ -46,10 +46,14 @@ const microStyle: React.CSSProperties = {
 export default function Transferir() {
   const navigate = useNavigate()
 
+  const [mode, setMode] = useState<'email' | 'pin'>('email')
   const [toEmail, setToEmail] = useState('')
+  const [toPin, setToPin] = useState('')
   const [currency, setCurrency] = useState('ARS')
   const [amount, setAmount] = useState('')
 
+  const [myPin, setMyPin] = useState<string | null>(null)
+  const [pinCopied, setPinCopied] = useState(false)
   const [balances, setBalances] = useState<ApiBalance[]>([])
   const [submitting, setSubmitting] = useState(false)
   const [error, setError] = useState('')
@@ -66,6 +70,17 @@ export default function Transferir() {
     return () => { cancelled = true }
   }, [])
 
+  useEffect(() => {
+    let cancelled = false
+
+    api
+      .get<{ pin: string }>('/users/me/pin')
+      .then(data => { if (!cancelled) setMyPin(data.pin) })
+      .catch(() => { if (!cancelled) setMyPin(null) })
+
+    return () => { cancelled = true }
+  }, [])
+
   const numericAmount = parseFloat(amount.replace(',', '.'))
   const hasAmount = !Number.isNaN(numericAmount) && numericAmount > 0
 
@@ -74,7 +89,9 @@ export default function Transferir() {
   const insufficient = hasAmount && numericAmount > available
 
   const emailOk = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(toEmail.trim())
-  const canSubmit = emailOk && hasAmount && !insufficient && !submitting
+  const pinOk = /^[A-Za-z0-9]{6}$/.test(toPin.trim())
+  const destinatarioOk = mode === 'email' ? emailOk : pinOk
+  const canSubmit = destinatarioOk && hasAmount && !insufficient && !submitting
 
   async function handleSubmit() {
     if (!canSubmit) return
@@ -83,7 +100,9 @@ export default function Transferir() {
 
     try {
       const transfer = await api.post<ApiTransfer>('/transfers', {
-        toEmail: toEmail.trim(),
+        ...(mode === 'email'
+          ? { toEmail: toEmail.trim() }
+          : { toPin: toPin.trim().toUpperCase() }),
         currency,
         amount: numericAmount,
       })
@@ -115,7 +134,7 @@ export default function Transferir() {
         <div style={{ width: '100%', background: C.card, border: `1px solid ${C.cardBorder}`, borderRadius: C.radius, padding: 24, textAlign: 'left', display: 'flex', flexDirection: 'column', gap: 14 }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', gap: 12 }}>
             <span style={microStyle}>Para</span>
-            <span style={{ fontFamily: 'Inter, sans-serif', fontSize: 13, color: C.text, wordBreak: 'break-all' }}>{toEmail}</span>
+            <span style={{ fontFamily: 'Inter, sans-serif', fontSize: 13, color: C.text, wordBreak: 'break-all' }}>{mode === 'email' ? toEmail : `PIN ${toPin.toUpperCase()}`}</span>
           </div>
           <div style={{ height: 1, background: C.cardBorder }} />
           <div style={{ display: 'flex', justifyContent: 'space-between' }}>
@@ -149,7 +168,7 @@ export default function Transferir() {
         <div style={{ width: '100%', background: C.card, border: `1px solid ${C.cardBorder}`, borderRadius: C.radius, padding: 24, textAlign: 'left', display: 'flex', flexDirection: 'column', gap: 16 }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', gap: 12 }}>
             <span style={microStyle}>Para</span>
-            <span style={{ fontFamily: 'Inter, sans-serif', fontSize: 13, color: C.text, wordBreak: 'break-all' }}>{toEmail}</span>
+            <span style={{ fontFamily: 'Inter, sans-serif', fontSize: 13, color: C.text, wordBreak: 'break-all' }}>{mode === 'email' ? toEmail : `PIN ${toPin.toUpperCase()}`}</span>
           </div>
           <div style={{ height: 1, background: C.cardBorder }} />
           <div style={{ display: 'flex', justifyContent: 'space-between' }}>
@@ -174,22 +193,96 @@ export default function Transferir() {
         <p style={{ fontFamily: 'Inter, sans-serif', fontSize: 14, color: C.muted, marginTop: 4 }}>Enviá dinero a otra cuenta de Cheese Cash</p>
       </div>
 
+      {/* Mi PIN, para compartir con quien me quiera transferir */}
+      {myPin && (
+        <div style={{ display: 'flex', alignItems: 'center', gap: 14, background: C.card, border: `1px solid ${C.cardBorder}`, borderRadius: 14, padding: '14px 18px' }}>
+          <div style={{ minWidth: 0 }}>
+            <div style={{ ...microStyle, marginBottom: 4 }}>Tu PIN</div>
+            <div style={{ fontFamily: 'JetBrains Mono, monospace', fontWeight: 700, fontSize: 20, color: C.gold, letterSpacing: 4 }}>
+              {myPin}
+            </div>
+          </div>
+          <button
+            type="button"
+            onClick={() => {
+              navigator.clipboard?.writeText(myPin)
+              setPinCopied(true)
+              setTimeout(() => setPinCopied(false), 2000)
+            }}
+            style={{
+              marginLeft: 'auto', padding: '8px 14px', borderRadius: 9, cursor: 'pointer',
+              border: `1px solid ${C.cardBorder}`, background: 'transparent',
+              color: pinCopied ? C.gold : C.muted,
+              fontFamily: 'Inter, sans-serif', fontSize: 12.5, whiteSpace: 'nowrap',
+            }}>
+            {pinCopied ? 'Copiado' : 'Copiar'}
+          </button>
+        </div>
+      )}
+
       <div style={{ display: 'flex', flexDirection: 'column', gap: 20, background: C.card, border: `1px solid ${C.cardBorder}`, borderRadius: C.radius, padding: 24 }}>
+        {/* Selector de modo */}
         <div>
-          <label htmlFor="tr-email" style={labelStyle}>Email del destinatario</label>
-          <input
-            id="tr-email"
-            type="email"
-            autoComplete="off"
-            placeholder="nombre@correo.com"
-            value={toEmail}
-            onChange={e => setToEmail(e.target.value)}
-            style={fieldStyle}
-          />
-          <div style={{ ...microStyle, marginTop: 6, letterSpacing: 1, textTransform: 'none', fontSize: 11 }}>
-            Tiene que tener una cuenta en Cheese Cash
+          <span style={labelStyle}>Enviar usando</span>
+          <div style={{ display: 'flex', gap: 8 }}>
+            {(['email', 'pin'] as const).map(m => (
+              <button
+                key={m}
+                type="button"
+                onClick={() => { setMode(m); setError('') }}
+                aria-pressed={mode === m}
+                style={{
+                  flex: 1, padding: '10px 0', borderRadius: 10, cursor: 'pointer',
+                  border: `1px solid ${mode === m ? C.gold : C.cardBorder}`,
+                  background: mode === m ? 'rgba(242,212,136,0.1)' : 'transparent',
+                  color: mode === m ? C.gold : C.muted,
+                  fontFamily: 'Poppins, sans-serif', fontWeight: 600, fontSize: 13,
+                }}>
+                {m === 'email' ? 'Email' : 'PIN'}
+              </button>
+            ))}
           </div>
         </div>
+
+        {mode === 'email' ? (
+          <div>
+            <label htmlFor="tr-email" style={labelStyle}>Email del destinatario</label>
+            <input
+              id="tr-email"
+              type="email"
+              autoComplete="off"
+              placeholder="nombre@correo.com"
+              value={toEmail}
+              onChange={e => setToEmail(e.target.value)}
+              style={fieldStyle}
+            />
+            <div style={{ ...microStyle, marginTop: 6, letterSpacing: 1, textTransform: 'none', fontSize: 11 }}>
+              Tiene que tener una cuenta en Cheese Cash
+            </div>
+          </div>
+        ) : (
+          <div>
+            <label htmlFor="tr-pin" style={labelStyle}>PIN del destinatario</label>
+            <input
+              id="tr-pin"
+              type="text"
+              inputMode="text"
+              autoComplete="off"
+              maxLength={6}
+              placeholder="6 caracteres"
+              value={toPin}
+              onChange={e => setToPin(e.target.value.toUpperCase())}
+              style={{
+                ...fieldStyle,
+                fontFamily: 'JetBrains Mono, monospace',
+                letterSpacing: 6, fontSize: 18, textAlign: 'center',
+              }}
+            />
+            <div style={{ ...microStyle, marginTop: 6, letterSpacing: 1, textTransform: 'none', fontSize: 11 }}>
+              Pedile el PIN a quien le querés transferir
+            </div>
+          </div>
+        )}
 
         <div>
           <label htmlFor="tr-currency" style={labelStyle}>Moneda</label>
