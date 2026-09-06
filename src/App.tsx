@@ -8,6 +8,7 @@ import Operar from './pages/Operar/Operar'
 import Historial from './pages/Historial/Historial'
 import Conversor from './pages/Conversor/Conversor'
 import Transferir from './pages/Transferir/Transferir'
+import Configuracion from './pages/Configuracion/Configuracion'
 import ChatBot from './components/ChatBot/ChatBot'
 import Landing from './pages/Landing/Landing'
 import ConfirmTransaction from './pages/ConfirmTransaction/ConfirmTransaction'
@@ -35,6 +36,7 @@ function App() {
             <Route path="/historial" element={<Historial />} />
             <Route path="/conversor" element={<Conversor />} />
             <Route path="/transferir" element={<Transferir />} />
+            <Route path="/configuracion" element={<Configuracion />} />
           </Route>
         </Route>
 
