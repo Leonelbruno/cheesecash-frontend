@@ -8,27 +8,19 @@ const C = {
   green: '#4ade80', error: '#e2705f',
 }
 
-interface TxDetail {
+interface Transaction {
   id: string | number
-  type?: string
-  fromCurrency?: string; toCurrency?: string
-  from_currency?: string; to_currency?: string
-  fromAmount?: number; toAmount?: number
-  from_amount?: number; to_amount?: number
-  createdAt?: string; created_at?: string
-  // campos de transferencia
-  currency?: string
-  amount?: string | number
-  status?: string
-  from_wallet_id?: number
-  to_wallet_id?: number
-}
-
-interface HistoryItem {
-  kind: 'transaction' | 'transfer'
-  id: string | number
-  created_at: string
-  detail: TxDetail
+  type: string
+  fromCurrency?: string
+  toCurrency?: string
+  from_currency?: string
+  to_currency?: string
+  fromAmount?: number
+  toAmount?: number
+  from_amount?: number
+  to_amount?: number
+  createdAt?: string
+  created_at?: string
 }
 
 const TX_TYPE_NORM: Record<string, string> = {
@@ -80,22 +72,24 @@ function SkeletonRow() {
 }
 
 export default function Historial() {
-  const [active, setActive]       = useState('Todas')
-  const [items, setItems]         = useState<HistoryItem[]>([])
-  const [loading, setLoading]     = useState(true)
-  const [error, setError]         = useState('')
+  const [active, setActive]     = useState('Todas')
+  const [txs, setTxs]           = useState<Transaction[]>([])
+  const [loading, setLoading]   = useState(true)
+  const [error, setError]       = useState('')
 
   useEffect(() => {
-    api.get<HistoryItem[]>('/transfers/history')
-      .then(res => setItems(Array.isArray(res) ? res : []))
+    api.get<Transaction[] | { transactions: Transaction[] }>('/transactions')
+      .then(res => {
+        const data = Array.isArray(res) ? res : (res as { transactions: Transaction[] }).transactions ?? []
+        setTxs(data)
+      })
       .catch(() => setError('No se pudo cargar el historial. Intentá de nuevo más tarde.'))
       .finally(() => setLoading(false))
   }, [])
 
-  const filtered = items.filter(item => {
+  const filtered = txs.filter(t => {
     if (active === 'Todas') return true
-    if (item.kind === 'transfer') return active.toLowerCase() === 'transferencia'
-    const tipo = TX_TYPE_NORM[item.detail.type?.toLowerCase() ?? ''] ?? ''
+    const tipo = TX_TYPE_NORM[t.type?.toLowerCase() ?? ''] ?? ''
     return tipo === active.toLowerCase()
   })
 
@@ -143,27 +137,16 @@ export default function Historial() {
         </div>
       ) : (
         <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-          {filtered.map(item => {
-            const isTransfer = item.kind === 'transfer'
-            const d = item.detail
-
-            // Para transferencias
-            const transferCur = d.currency ?? ''
-            const transferAmt = typeof d.amount === 'string' ? parseFloat(d.amount) : (d.amount ?? 0)
-            const transferStatus = d.status ?? ''
-
-            // Para transacciones
-            const rawType = d.type?.toLowerCase() ?? ''
-            const tipo    = isTransfer ? 'transferencia' : (TX_TYPE_NORM[rawType] ?? rawType)
-            const fromCur = d.fromCurrency ?? d.from_currency ?? ''
-            const toCur   = d.toCurrency   ?? d.to_currency   ?? ''
-            const toAmt   = d.toAmount     ?? d.to_amount     ?? 0
-            const fromAmt = d.fromAmount   ?? d.from_amount   ?? 0
-
-            const dateStr = formatDate(item.created_at)
-
+          {filtered.map(t => {
+            const rawType = t.type?.toLowerCase() ?? ''
+            const tipo    = TX_TYPE_NORM[rawType] ?? rawType
+            const fromCur = t.fromCurrency ?? t.from_currency ?? ''
+            const toCur   = t.toCurrency   ?? t.to_currency   ?? ''
+            const toAmt   = t.toAmount     ?? t.to_amount     ?? 0
+            const fromAmt = t.fromAmount   ?? t.from_amount   ?? 0
+            const dateStr = formatDate(t.createdAt ?? t.created_at)
             return (
-              <div key={`${item.kind}-${String(item.id)}`} style={{
+              <div key={String(t.id)} style={{
                 display: 'flex', alignItems: 'center', gap: 16,
                 padding: '16px 20px', background: C.card,
                 border: `1px solid ${C.cardBorder}`, borderRadius: 14,
@@ -176,53 +159,33 @@ export default function Historial() {
                   {TX_EMOJI[tipo] ?? '💱'}
                 </div>
                 <div style={{ flex: 1, minWidth: 0 }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                    <span style={{
-                      fontFamily: 'Inter, sans-serif', fontSize: 11, fontWeight: 600,
-                      padding: '2px 8px', borderRadius: 6,
-                      background: TX_COLORS[tipo] ?? 'rgba(154,146,127,0.12)',
-                      color: TX_TEXT[tipo] ?? C.muted,
-                    }}>
-                      {TX_LABEL[tipo] ?? tipo}
-                    </span>
-                    {isTransfer && transferStatus === 'pending' && (
-                      <span style={{ fontFamily: 'Inter, sans-serif', fontSize: 10, color: '#f2d488', background: 'rgba(242,212,136,0.1)', padding: '2px 6px', borderRadius: 4 }}>
-                        Pendiente
-                      </span>
-                    )}
-                    {isTransfer && transferStatus === 'failed' && (
-                      <span style={{ fontFamily: 'Inter, sans-serif', fontSize: 10, color: C.error, background: 'rgba(226,112,95,0.1)', padding: '2px 6px', borderRadius: 4 }}>
-                        Fallida
-                      </span>
-                    )}
-                  </div>
+                  <span style={{
+                    fontFamily: 'Inter, sans-serif', fontSize: 11, fontWeight: 600,
+                    padding: '2px 8px', borderRadius: 6,
+                    background: TX_COLORS[tipo] ?? 'rgba(154,146,127,0.12)',
+                    color: TX_TEXT[tipo] ?? C.muted,
+                  }}>
+                    {TX_LABEL[tipo] ?? t.type}
+                  </span>
                   <div style={{ fontFamily: 'Inter, sans-serif', fontSize: 11, marginTop: 4, color: C.mutedDark }}>
-                    {isTransfer ? transferCur : (fromCur && toCur ? `${fromCur} → ${toCur}` : tipo)}
+                    {fromCur && toCur ? `${fromCur} → ${toCur}` : tipo}
                     {dateStr ? ` · ${dateStr}` : ''}
                   </div>
                 </div>
                 <div style={{ textAlign: 'right', flexShrink: 0 }}>
-                  {isTransfer ? (
-                    <div style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: 13, fontWeight: 600, color: C.text }}>
-                      {formatAmount(transferAmt, transferCur)} {transferCur}
-                    </div>
-                  ) : (
-                    <>
-                      <div style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: 13, fontWeight: 600, color: C.text }}>
-                        {toAmt ? `${formatAmount(toAmt, toCur)} ${toCur}` : ''}
-                      </div>
-                      <div style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: 10, color: C.mutedDark }}>
-                        {fromAmt ? `${formatAmount(fromAmt, fromCur)} ${fromCur}` : ''}
-                      </div>
-                    </>
-                  )}
+                  <div style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: 13, fontWeight: 600, color: C.text }}>
+                    {toAmt ? `${formatAmount(toAmt, toCur)} ${toCur}` : ''}
+                  </div>
+                  <div style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: 10, color: C.mutedDark }}>
+                    {fromAmt ? `${formatAmount(fromAmt, fromCur)} ${fromCur}` : ''}
+                  </div>
                 </div>
               </div>
             )
           })}
           {filtered.length === 0 && !loading && (
             <div style={{ padding: '64px 0', textAlign: 'center', fontFamily: 'Inter, sans-serif', fontSize: 14, color: C.mutedDark }}>
-              {items.length === 0 ? 'Todavía no realizaste ninguna operación.' : 'Sin movimientos para este filtro.'}
+              {txs.length === 0 ? 'Todavía no realizaste ninguna operación.' : 'Sin movimientos para este filtro.'}
             </div>
           )}
         </div>
