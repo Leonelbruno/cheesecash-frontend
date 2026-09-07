@@ -11,6 +11,7 @@
   background: linear-gradient(135deg, #f2d488, #d9a942);
   box-shadow: 0 6px 20px rgba(217, 169, 66, 0.4);
   cursor: grab;
+  touch-action: none;
   display: flex;
   align-items: center;
   justify-content: center;

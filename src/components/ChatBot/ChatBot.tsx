@@ -39,7 +39,8 @@ export default function ChatBot() {
     if (open) bottomRef.current?.scrollIntoView({ behavior: 'smooth' })
   }, [messages, open])
 
-  /* ── Drag logic ── */
+  /* ── Drag logic (sin re-renders durante el drag) ── */
+  const fabRef     = useRef<HTMLButtonElement>(null)
   const dragging   = useRef(false)
   const hasDragged = useRef(false)
   const startPtr   = useRef({ x: 0, y: 0 })
@@ -58,15 +59,28 @@ export default function ChatBot() {
     const dx = e.clientX - startPtr.current.x
     const dy = e.clientY - startPtr.current.y
     if (Math.abs(dx) > 4 || Math.abs(dy) > 4) hasDragged.current = true
-    setPos({
-      x: Math.min(Math.max(0, startPos.current.x + dx), window.innerWidth  - FAB),
-      y: Math.min(Math.max(0, startPos.current.y + dy), window.innerHeight - FAB),
-    })
+    const newX = Math.min(Math.max(0, startPos.current.x + dx), window.innerWidth  - FAB)
+    const newY = Math.min(Math.max(0, startPos.current.y + dy), window.innerHeight - FAB)
+    // Mover el DOM directamente — sin re-render
+    if (fabRef.current) {
+      fabRef.current.style.left = `${newX}px`
+      fabRef.current.style.top  = `${newY}px`
+    }
   }
 
-  function onPointerUp() {
+  function onPointerUp(e: React.PointerEvent<HTMLButtonElement>) {
     dragging.current = false
-    if (!hasDragged.current) setOpen(v => !v)
+    if (!hasDragged.current) {
+      setOpen(v => !v)
+    } else {
+      // Sincronizar el estado React con la posición final del DOM
+      const dx = e.clientX - startPtr.current.x
+      const dy = e.clientY - startPtr.current.y
+      setPos({
+        x: Math.min(Math.max(0, startPos.current.x + dx), window.innerWidth  - FAB),
+        y: Math.min(Math.max(0, startPos.current.y + dy), window.innerHeight - FAB),
+      })
+    }
   }
 
   /* ── Panel position (encima o debajo según espacio) ── */
@@ -107,6 +121,7 @@ export default function ChatBot() {
     <>
       {/* ── FAB arrastrable ── */}
       <button
+        ref={fabRef}
         className="chat-fab"
         style={{ left: pos.x, top: pos.y, bottom: 'auto', right: 'auto' }}
         onPointerDown={onPointerDown}
