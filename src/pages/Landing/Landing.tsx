@@ -93,10 +93,20 @@ function getRate(rates: Record<string, number>, from: string, to: string): numbe
 }
 
 function formatResult(value: number, currency: string): string {
-  if (currency === 'BTC') return value.toFixed(8)
-  if (currency === 'ARS') return value.toLocaleString('es-AR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })
-  if (value < 0.01) return value.toFixed(6)
-  return value.toFixed(2)
+  if (currency === 'BTC') {
+    return value.toLocaleString('es-AR', {
+      minimumFractionDigits: 8,
+      maximumFractionDigits: 8,
+    })
+  }
+
+  const decimals =
+    Math.abs(value) > 0 && Math.abs(value) < 0.01 ? 6 : 2
+
+  return value.toLocaleString('es-AR', {
+    minimumFractionDigits: decimals,
+    maximumFractionDigits: decimals,
+  })
 }
 
 /* ── Sección de cotizaciones ── */
@@ -219,6 +229,11 @@ function ConversorSection() {
       ? numericAmount * rate
       : null
 
+  const swapCurrencies = () => {
+    setFrom(to)
+    setTo(from)
+  }
+
   const fieldStyle: React.CSSProperties = {
     width: '100%', padding: '11px 14px', boxSizing: 'border-box' as const,
     background: '#0f0d0b', border: `1px solid ${C.cardBorder}`, borderRadius: 10,
@@ -232,17 +247,64 @@ function ConversorSection() {
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 16, background: C.card, border: `1px solid ${C.cardBorder}`, borderRadius: 18, padding: 28 }}>
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
+      <div
+        style={{
+          display: 'grid',
+          gridTemplateColumns: '1fr auto 1fr',
+          gap: 12,
+          alignItems: 'end',
+        }}
+      >
         <div>
           <label style={labelStyle}>De</label>
-          <select value={from} onChange={e => setFrom(e.target.value)} style={fieldStyle}>
-            {CURRENCIES.filter(c => c !== to).map(c => <option key={c} value={c}>{c}</option>)}
+          <select
+            value={from}
+            onChange={e => setFrom(e.target.value)}
+            style={fieldStyle}
+          >
+            {CURRENCIES
+              .filter(c => c !== to)
+              .map(c => (
+                <option key={c} value={c}>
+                  {c}
+                </option>
+              ))}
           </select>
         </div>
+
+        <button
+          type="button"
+          onClick={swapCurrencies}
+          aria-label="Invertir monedas"
+          title="Invertir monedas"
+          style={{
+            width: 42,
+            height: 42,
+            borderRadius: '50%',
+            border: `1px solid ${C.cardBorder}`,
+            background: '#0f0d0b',
+            color: C.gold,
+            fontSize: 20,
+            cursor: 'pointer',
+          }}
+        >
+          ⇄
+        </button>
+
         <div>
           <label style={labelStyle}>A</label>
-          <select value={to} onChange={e => setTo(e.target.value)} style={fieldStyle}>
-            {CURRENCIES.filter(c => c !== from).map(c => <option key={c} value={c}>{c}</option>)}
+          <select
+            value={to}
+            onChange={e => setTo(e.target.value)}
+            style={fieldStyle}
+          >
+            {CURRENCIES
+              .filter(c => c !== from)
+              .map(c => (
+                <option key={c} value={c}>
+                  {c}
+                </option>
+              ))}
           </select>
         </div>
       </div>
@@ -278,7 +340,11 @@ function ConversorSection() {
           </div>
         ) : (
           <>
-            <div style={{ fontFamily: 'JetBrains Mono, monospace', fontWeight: 700, fontSize: 36, color: C.gold, lineHeight: 1 }}>
+            <div style={{
+              fontFamily: 'JetBrains Mono, monospace', fontWeight: 700, fontSize: 'clamp(22px, 7vw, 36px)',
+              maxWidth: '100%',
+              overflowWrap: 'anywhere', color: C.gold, lineHeight: 1
+            }}>
               {result !== null ? formatResult(result, to) : '—'}
             </div>
             <div style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: 13, color: C.goldMid, marginTop: 4 }}>{to}</div>
