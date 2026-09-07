@@ -25,7 +25,7 @@ interface TxDetail {
 }
 
 interface HistoryItem {
-  kind: 'transaction' | 'transfer'
+  kind: 'transaction' | 'transfer' | 'deposit'
   id: string | number
   created_at: string
   detail: TxDetail
@@ -41,18 +41,21 @@ const TX_TYPE_NORM: Record<string, string> = {
 const TX_COLORS: Record<string, string> = {
   compra: 'rgba(74,222,128,0.12)', venta: 'rgba(226,112,95,0.12)',
   intercambio: 'rgba(242,212,136,0.12)', transferencia: 'rgba(154,146,127,0.12)',
+  recarga: 'rgba(96,165,250,0.12)',
 }
 const TX_TEXT: Record<string, string> = {
   compra: '#4ade80', venta: '#e2705f', intercambio: '#f2d488', transferencia: '#9a927f',
+  recarga: '#60a5fa',
 }
 const TX_LABEL: Record<string, string> = {
   compra: 'Compra', venta: 'Venta', intercambio: 'Intercambio', transferencia: 'Transferencia',
+  recarga: 'Recarga',
 }
 const TX_EMOJI: Record<string, string> = {
-  compra: '💰', venta: '📤', intercambio: '🔄', transferencia: '📲',
+  compra: '💰', venta: '📤', intercambio: '🔄', transferencia: '📲', recarga: '⬇️',
 }
 
-const FILTERS = ['Todas', 'Compra', 'Venta', 'Intercambio', 'Transferencia']
+const FILTERS = ['Todas', 'Compra', 'Venta', 'Intercambio', 'Transferencia', 'Recarga']
 
 function formatAmount(amount: number, currency: string): string {
   if (!amount) return ''
@@ -86,8 +89,21 @@ export default function Historial() {
   const [error, setError]         = useState('')
 
   useEffect(() => {
-    api.get<HistoryItem[]>('/transfers/history')
-      .then(res => setItems(Array.isArray(res) ? res : []))
+    Promise.all([
+      api.get<HistoryItem[]>('/transfers/history'),
+      api.get<TxDetail[]>('/deposits'),
+    ])
+      .then(([history, deposits]) => {
+        const depositItems: HistoryItem[] = (Array.isArray(deposits) ? deposits : []).map(d => ({
+          kind: 'deposit' as const,
+          id: d.id,
+          created_at: (d.created_at as string) ?? '',
+          detail: d,
+        }))
+        const combined = [...(Array.isArray(history) ? history : []), ...depositItems]
+        combined.sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
+        setItems(combined)
+      })
       .catch(() => setError('No se pudo cargar el historial. Intentá de nuevo más tarde.'))
       .finally(() => setLoading(false))
   }, [])
@@ -95,6 +111,7 @@ export default function Historial() {
   const filtered = items.filter(item => {
     if (active === 'Todas') return true
     if (item.kind === 'transfer') return active.toLowerCase() === 'transferencia'
+    if (item.kind === 'deposit') return active.toLowerCase() === 'recarga'
     const tipo = TX_TYPE_NORM[item.detail.type?.toLowerCase() ?? ''] ?? ''
     return tipo === active.toLowerCase()
   })
@@ -145,6 +162,7 @@ export default function Historial() {
         <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
           {filtered.map(item => {
             const isTransfer = item.kind === 'transfer'
+            const isDeposit  = item.kind === 'deposit'
             const d = item.detail
 
             // Para transferencias
@@ -154,7 +172,7 @@ export default function Historial() {
 
             // Para transacciones
             const rawType = d.type?.toLowerCase() ?? ''
-            const tipo    = isTransfer ? 'transferencia' : (TX_TYPE_NORM[rawType] ?? rawType)
+            const tipo    = isDeposit ? 'recarga' : isTransfer ? 'transferencia' : (TX_TYPE_NORM[rawType] ?? rawType)
             const fromCur = d.fromCurrency ?? d.from_currency ?? ''
             const toCur   = d.toCurrency   ?? d.to_currency   ?? ''
             const toAmt   = d.toAmount     ?? d.to_amount     ?? 0
@@ -202,9 +220,9 @@ export default function Historial() {
                   </div>
                 </div>
                 <div style={{ textAlign: 'right', flexShrink: 0 }}>
-                  {isTransfer ? (
-                    <div style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: 13, fontWeight: 600, color: C.text }}>
-                      {formatAmount(transferAmt, transferCur)} {transferCur}
+                  {(isTransfer || isDeposit) ? (
+                    <div style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: 13, fontWeight: 600, color: isDeposit ? '#60a5fa' : C.text }}>
+                      {isDeposit ? '+' : ''}{formatAmount(transferAmt, transferCur)} {transferCur}
                     </div>
                   ) : (
                     <>
