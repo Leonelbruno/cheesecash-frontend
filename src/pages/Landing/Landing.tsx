@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import CheeseCashLogo from '../../components/CheeseCashLogo/CheeseCashLogo'
+import { api } from '../../services/api'
 import './Landing.css'
 
 const API = 'https://cheesecash-back-production.up.railway.app/api'
@@ -73,6 +74,12 @@ const STEPS = [
   { n: '02', title: 'Cargá tu billetera', desc: 'Seleccioná las monedas que querés tener y empezá a operar.' },
   { n: '03', title: 'Operá libremente', desc: 'Comprá, vendé, intercambiá y transferí desde cualquier dispositivo.' },
 ]
+
+interface RateResponse {
+  from: string
+  to: string
+  rate: number
+}
 
 /* ── Helpers ── */
 function getRate(rates: Record<string, number>, from: string, to: string): number {
@@ -162,13 +169,55 @@ function RatesSection({ rates }: { rates: Record<string, number> | null }) {
 }
 
 /* ── Conversor en la landing ── */
-function ConversorSection({ rates }: { rates: Record<string, number> | null }) {
+function ConversorSection() {
   const [from, setFrom] = useState('USD')
   const [to, setTo] = useState('ARS')
   const [amount, setAmount] = useState('100')
 
-  const rate = rates ? getRate(rates, from, to) : 0
-  const result = rates && amount ? (parseFloat(amount.replace(',', '.')) * rate) : null
+  const [rate, setRate] = useState<number | null>(null)
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState('')
+
+  useEffect(() => {
+    let cancelled = false
+
+    const fetchRate = async () => {
+      try {
+        setLoading(true)
+        setError('')
+
+        const data = await api.get<RateResponse>(
+          `/rates?from=${encodeURIComponent(from)}&to=${encodeURIComponent(to)}`
+        )
+
+        if (!cancelled) {
+          setRate(data.rate)
+        }
+      } catch {
+        if (!cancelled) {
+          setRate(null)
+          setError('No se pudo obtener la cotización')
+        }
+      } finally {
+        if (!cancelled) {
+          setLoading(false)
+        }
+      }
+    }
+
+    fetchRate()
+
+    return () => {
+      cancelled = true
+    }
+  }, [from, to])
+
+  const numericAmount = parseFloat(amount.replace(',', '.'))
+
+  const result =
+    rate !== null && Number.isFinite(numericAmount)
+      ? numericAmount * rate
+      : null
 
   const fieldStyle: React.CSSProperties = {
     width: '100%', padding: '11px 14px', boxSizing: 'border-box' as const,
@@ -207,8 +256,26 @@ function ConversorSection({ rates }: { rates: Record<string, number> | null }) {
       </div>
       <div style={{ textAlign: 'center', padding: '20px 16px', background: '#0f0d0b', border: '1px solid rgba(242,212,136,0.2)', borderRadius: 14 }}>
         <p style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: 10, textTransform: 'uppercase', letterSpacing: 4, color: C.muted, margin: '0 0 8px' }}>Resultado</p>
-        {!rates ? (
-          <div style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: 13, color: C.muted }}>Cargando tasas...</div>
+        {loading ? (
+          <div
+            style={{
+              fontFamily: 'JetBrains Mono, monospace',
+              fontSize: 13,
+              color: C.muted,
+            }}
+          >
+            Cargando cotización...
+          </div>
+        ) : error ? (
+          <div
+            style={{
+              fontFamily: 'JetBrains Mono, monospace',
+              fontSize: 13,
+              color: C.muted,
+            }}
+          >
+            {error}
+          </div>
         ) : (
           <>
             <div style={{ fontFamily: 'JetBrains Mono, monospace', fontWeight: 700, fontSize: 36, color: C.gold, lineHeight: 1 }}>
@@ -216,7 +283,7 @@ function ConversorSection({ rates }: { rates: Record<string, number> | null }) {
             </div>
             <div style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: 13, color: C.goldMid, marginTop: 4 }}>{to}</div>
             <div style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: 11, color: C.mutedDark, marginTop: 8 }}>
-              1 {from} = {formatResult(rate, to)} {to}
+              1 {from} = {rate !== null ? formatResult(rate, to) : '—'} {to}
             </div>
           </>
         )}
@@ -315,7 +382,7 @@ export default function Landing() {
       <section style={{ padding: '0 48px 80px', maxWidth: 580, margin: '0 auto' }}>
         <p className="section-label">Probalo ahora</p>
         <h2 className="section-title" style={{ marginBottom: 32 }}>Conversor con tasas reales</h2>
-        <ConversorSection rates={rates} />
+        <ConversorSection />
         <div style={{ textAlign: 'center', marginTop: 20 }}>
           <a
             className="btn-outline-lg"
