@@ -15,17 +15,19 @@ const QUICK_REPLIES = [
 ]
 
 
-const FAB   = 56
-const GAP   = 12
-const MARGIN = 16
+const FAB        = 56
+const GAP        = 12
+const MARGIN     = 16
+const BOTTOM_NAV = 70 // altura del bottom nav en mobile
 
 let msgId = 0
 
 export default function ChatBot() {
   const [open, setOpen]       = useState(false)
+  const isMobile = window.innerWidth <= 768
   const [pos, setPos]         = useState(() => ({
     x: window.innerWidth  - FAB - MARGIN,
-    y: window.innerHeight - FAB - MARGIN,
+    y: window.innerHeight - FAB - MARGIN - (isMobile ? BOTTOM_NAV : 0),
   }))
   const [messages, setMessages] = useState<Message[]>([
     { id: ++msgId, from: 'bot', text: '¡Hola! Soy el asistente de Cheese Cash. ¿En qué puedo ayudarte hoy?' },
