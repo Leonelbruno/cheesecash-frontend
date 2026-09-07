@@ -249,7 +249,13 @@
 .chat-send:hover { transform: scale(1.08); }
 
 /* responsive */
-@media (max-width: 480px) {
-  .chat-panel { width: calc(100vw - 32px); right: 16px; }
-  .chat-fab { right: 16px; bottom: 16px; }
+@media (max-width: 768px) {
+  .chat-fab {
+    bottom: 84px; /* encima del bottom nav */
+    right: 16px;
+  }
+  .chat-panel {
+    width: calc(100vw - 32px);
+    right: 16px;
+  }
 }

@@ -85,11 +85,19 @@ const NAV_ITEMS = [
   { to: '/configuracion', label: 'Ajustes', Icon: IconConfiguracion },
 ]
 
+const BOTTOM_NAV_ITEMS = [
+  { to: '/dashboard', label: 'Home', Icon: IconHome },
+  { to: '/operar', label: 'Operar', Icon: IconOperar },
+  { to: '/transferir', label: 'Transferir', Icon: IconTransferir },
+  { to: '/recargar',   label: 'Recargar',   Icon: IconRecargar },
+  { to: '/historial', label: 'Historial', Icon: IconHistorial },
+]
+
 /* ── Bottom nav (solo mobile) ── */
 function BottomNav() {
   return (
     <nav className="bottom-nav">
-      {NAV_ITEMS.map(({ to, label, Icon }) => (
+      {BOTTOM_NAV_ITEMS.map(({ to, label, Icon }) => (
         <NavLink
           key={to}
           to={to}

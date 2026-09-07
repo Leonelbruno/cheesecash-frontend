@@ -15,20 +15,15 @@ const QUICK_REPLIES = [
 ]
 
 
-const FAB        = 56
-const GAP        = 12
-const MARGIN     = 16
-const BOTTOM_NAV = 70 // altura del bottom nav en mobile
+const FAB    = 56
+const GAP    = 12
+const MARGIN = 16
 
 let msgId = 0
 
 export default function ChatBot() {
   const [open, setOpen]       = useState(false)
-  const isMobile = window.innerWidth <= 768
-  const [pos, setPos]         = useState(() => ({
-    x: window.innerWidth  - FAB - MARGIN,
-    y: window.innerHeight - FAB - MARGIN - (isMobile ? BOTTOM_NAV : 0),
-  }))
+  const [pos, setPos]         = useState<{ x: number; y: number } | null>(null)
   const [messages, setMessages] = useState<Message[]>([
     { id: ++msgId, from: 'bot', text: '¡Hola! Soy el asistente de Cheese Cash. ¿En qué puedo ayudarte hoy?' },
   ])
@@ -52,7 +47,9 @@ export default function ChatBot() {
     dragging.current   = true
     hasDragged.current = false
     startPtr.current   = { x: e.clientX, y: e.clientY }
-    startPos.current   = { ...pos }
+    const rect = e.currentTarget.getBoundingClientRect()
+    startPos.current = { x: rect.left, y: rect.top }
+    if (!pos) setPos({ x: rect.left, y: rect.top })
     e.currentTarget.setPointerCapture(e.pointerId)
   }
 
@@ -63,10 +60,11 @@ export default function ChatBot() {
     if (Math.abs(dx) > 4 || Math.abs(dy) > 4) hasDragged.current = true
     const newX = Math.min(Math.max(0, startPos.current.x + dx), window.innerWidth  - FAB)
     const newY = Math.min(Math.max(0, startPos.current.y + dy), window.innerHeight - FAB)
-    // Mover el DOM directamente — sin re-render
     if (fabRef.current) {
-      fabRef.current.style.left = `${newX}px`
-      fabRef.current.style.top  = `${newY}px`
+      fabRef.current.style.left   = `${newX}px`
+      fabRef.current.style.top    = `${newY}px`
+      fabRef.current.style.bottom = 'auto'
+      fabRef.current.style.right  = 'auto'
     }
   }
 
@@ -75,7 +73,6 @@ export default function ChatBot() {
     if (!hasDragged.current) {
       setOpen(v => !v)
     } else {
-      // Sincronizar el estado React con la posición final del DOM
       const dx = e.clientX - startPtr.current.x
       const dy = e.clientY - startPtr.current.y
       setPos({
@@ -88,14 +85,16 @@ export default function ChatBot() {
   /* ── Panel position (encima o debajo según espacio) ── */
   const panelW  = 360
   const panelH  = 500
+  const fabX = pos?.x ?? (window.innerWidth  - FAB - MARGIN)
+  const fabY = pos?.y ?? (window.innerHeight - FAB - MARGIN)
   const panelLeft = Math.min(
-    Math.max(MARGIN, pos.x + FAB - panelW),
+    Math.max(MARGIN, fabX + FAB - panelW),
     window.innerWidth - panelW - MARGIN,
   )
-  const spaceAbove = pos.y
+  const spaceAbove = fabY
   const panelTop   = spaceAbove >= panelH + GAP
-    ? pos.y - panelH - GAP
-    : pos.y + FAB + GAP
+    ? fabY - panelH - GAP
+    : fabY + FAB + GAP
 
   /* ── Mensajes ── */
   async function sendMessage(text: string) {
@@ -125,7 +124,7 @@ export default function ChatBot() {
       <button
         ref={fabRef}
         className="chat-fab"
-        style={{ left: pos.x, top: pos.y, bottom: 'auto', right: 'auto' }}
+        style={pos ? { left: pos.x, top: pos.y, bottom: 'auto', right: 'auto' } : {}}
         onPointerDown={onPointerDown}
         onPointerMove={onPointerMove}
         onPointerUp={onPointerUp}
