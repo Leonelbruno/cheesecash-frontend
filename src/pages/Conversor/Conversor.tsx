@@ -44,6 +44,23 @@ const labelStyle: React.CSSProperties = {
   marginBottom: 6,
 }
 
+function formatResult(value: number, currency: string): string {
+  if (currency === 'BTC') {
+    return value.toLocaleString('es-AR', {
+      minimumFractionDigits: 8,
+      maximumFractionDigits: 8,
+    })
+  }
+
+  const decimals =
+    Math.abs(value) > 0 && Math.abs(value) < 0.01 ? 6 : 2
+
+  return value.toLocaleString('es-AR', {
+    minimumFractionDigits: decimals,
+    maximumFractionDigits: decimals,
+  })
+}
+
 export default function Conversor() {
   const [from, setFrom] = useState('USD')
   const [to, setTo] = useState('ARS')
@@ -95,8 +112,8 @@ export default function Conversor() {
 
   const result =
     rate !== null && Number.isFinite(parsedAmount)
-      ? (parsedAmount * rate).toFixed(to === 'BTC' ? 8 : 2)
-      : '0.00'
+      ? parsedAmount * rate
+      : null
 
   const swapCurrencies = () => {
     setFrom(to)
@@ -257,12 +274,14 @@ export default function Conversor() {
                 style={{
                   fontFamily: 'JetBrains Mono, monospace',
                   fontWeight: 700,
-                  fontSize: 40,
+                  fontSize: 'clamp(22px, 7vw, 40px)',
                   color: C.gold,
                   lineHeight: 1,
+                  maxWidth: '100%',
+                  overflowWrap: 'anywhere',
                 }}
               >
-                {result}
+                {result !== null ? formatResult(result, to) : '—'}
               </div>
 
               <div
@@ -285,7 +304,7 @@ export default function Conversor() {
                     marginTop: 10,
                   }}
                 >
-                  1 {from} = {rate.toFixed(to === 'BTC' ? 8 : 6)} {to}
+                  1 {from} = {formatResult(rate, to)} {to}
                 </div>
               )}
             </>
