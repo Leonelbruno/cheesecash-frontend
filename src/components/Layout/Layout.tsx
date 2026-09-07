@@ -47,6 +47,15 @@ function IconTransferir({ active }: { active: boolean }) {
     </svg>
   )
 }
+function IconRecargar({ active }: { active: boolean }) {
+  return (
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={active ? 2.2 : 1.8} strokeLinecap="round" strokeLinejoin="round">
+      <circle cx="12" cy="12" r="10" />
+      <line x1="12" y1="8" x2="12" y2="16" />
+      <line x1="8" y1="12" x2="16" y2="12" />
+    </svg>
+  )
+}
 function IconConfiguracion({ active }: { active: boolean }) {
   return (
     <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={active ? 2.2 : 1.8} strokeLinecap="round" strokeLinejoin="round">
@@ -72,6 +81,7 @@ const NAV_ITEMS = [
   { to: '/historial', label: 'Historial', Icon: IconHistorial },
   { to: '/conversor', label: 'Conversor', Icon: IconConversor },
   { to: '/transferir', label: 'Transferir', Icon: IconTransferir },
+  { to: '/recargar',   label: 'Recargar',   Icon: IconRecargar },
   { to: '/configuracion', label: 'Ajustes', Icon: IconConfiguracion },
 ]
 
