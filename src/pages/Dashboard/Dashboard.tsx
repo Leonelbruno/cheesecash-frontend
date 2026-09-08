@@ -27,6 +27,26 @@ interface ApiTransaction {
   created_at: string
 }
 
+interface ApiDeposit {
+  id: number
+  currency: string
+  amount: string | number
+  created_at: string
+}
+
+interface MovimientoItem {
+  id: number
+  kind: 'transaction' | 'deposit'
+  type: string
+  from_currency: string
+  to_currency: string
+  from_amount: string
+  to_amount: string
+  created_at: string
+  currency?: string
+  amount?: string | number
+}
+
 const CURRENCY_ORDER = ['ARS', 'USD', 'EUR', 'BTC']
 
 const CURRENCY_META: Record<string, { symbol: string; name: string }> = {
@@ -40,6 +60,7 @@ const TX_META: Record<string, { label: string; className: string; icon: typeof C
   buy: { label: 'Compra', className: 'purchase', icon: CircleDollarSign },
   sell: { label: 'Venta', className: 'sale', icon: ArrowUpFromLine },
   exchange: { label: 'Intercambio', className: 'exchange', icon: ArrowLeftRight },
+  deposit: { label: 'Recarga', className: 'deposit', icon: CircleDollarSign },
 }
 
 const quickActions = [
@@ -78,7 +99,7 @@ function Dashboard() {
   const navigate = useNavigate()
 
   const [balances, setBalances] = useState<ApiBalance[]>([])
-  const [transactions, setTransactions] = useState<ApiTransaction[]>([])
+  const [transactions, setTransactions] = useState<MovimientoItem[]>([])
   const [loadingBalances, setLoadingBalances] = useState(true)
   const [loadingTransactions, setLoadingTransactions] = useState(true)
   const [balancesError, setBalancesError] = useState('')
@@ -99,10 +120,24 @@ function Dashboard() {
         if (!cancelled) setLoadingBalances(false)
       })
 
-    api
-      .get<ApiTransaction[]>('/transactions')
-      .then((data) => {
-        if (!cancelled) setTransactions(data.slice(0, 3))
+    Promise.all([
+      api.get<ApiTransaction[]>('/transactions').catch(() => [] as ApiTransaction[]),
+      api.get<ApiDeposit[]>('/deposits').catch(() => [] as ApiDeposit[]),
+    ])
+      .then(([txs, deposits]) => {
+        const txItems: MovimientoItem[] = (Array.isArray(txs) ? txs : []).map(t => ({
+          ...t, kind: 'transaction' as const,
+        }))
+        const depItems: MovimientoItem[] = (Array.isArray(deposits) ? deposits : []).map(d => ({
+          id: d.id, kind: 'deposit' as const, type: 'deposit',
+          from_currency: d.currency, to_currency: d.currency,
+          from_amount: String(d.amount), to_amount: String(d.amount),
+          created_at: d.created_at, currency: d.currency, amount: d.amount,
+        }))
+        const combined = [...txItems, ...depItems]
+          .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
+          .slice(0, 3)
+        if (!cancelled) setTransactions(combined)
       })
       .catch((err) => {
         if (!cancelled) setTransactionsError((err as Error).message)
@@ -240,27 +275,27 @@ function Dashboard() {
                         </span>
 
                         <p>
-                          {transaction.from_currency} → {transaction.to_currency} ·{' '}
-                          {formatDate(transaction.created_at)}
+                          {transaction.kind === 'deposit'
+                            ? `${transaction.currency} · ${formatDate(transaction.created_at)}`
+                            : `${transaction.from_currency} → ${transaction.to_currency} · ${formatDate(transaction.created_at)}`
+                          }
                         </p>
                       </div>
                     </div>
 
                     <div className="transaction-values">
                       <strong>
-                        {formatAmount(
-                          transaction.to_currency,
-                          transaction.to_amount,
-                        )}{' '}
-                        {transaction.to_currency}
+                        {transaction.kind === 'deposit'
+                          ? `+${formatAmount(transaction.currency!, String(transaction.amount))} ${transaction.currency}`
+                          : `${formatAmount(transaction.to_currency, transaction.to_amount)} ${transaction.to_currency}`
+                        }
                       </strong>
-                      <span>
-                        {formatAmount(
-                          transaction.from_currency,
-                          transaction.from_amount,
-                        )}{' '}
-                        {transaction.from_currency}
-                      </span>
+                      {transaction.kind !== 'deposit' && (
+                        <span>
+                          {formatAmount(transaction.from_currency, transaction.from_amount)}{' '}
+                          {transaction.from_currency}
+                        </span>
+                      )}
                     </div>
                   </article>
                 )
