@@ -162,7 +162,7 @@ function Dashboard() {
         <header className="dashboard-header">
           <div>
             <p>Bienvenido de vuelta</p>
-            <h1>Hola, {userName} 👋</h1>
+            <h1>Hola, {userName}</h1>
           </div>
 
           <div className="dashboard-avatar desktop-avatar">{initial}</div>
@@ -192,25 +192,27 @@ function Dashboard() {
 
           {!loadingBalances && !balancesError && (
             <div className="currency-grid">
-              {balances.map((balance) => {
+              {balances
+                .filter((balance) => balance.currency !== 'USD')
+                .map((balance) => {
                 const meta = CURRENCY_META[balance.currency]
 
                 return (
-                  <article className="currency-card" key={balance.currency}>
-                    <div className="currency-card-header">
-                      <div>
-                        <strong>{meta?.symbol ?? balance.currency}</strong>
-                        <span>{balance.currency}</span>
-                      </div>
-                    </div>
+              <article className="currency-card" key={balance.currency}>
+                <div className="currency-card-header">
+                  <div>
+                    <strong>{meta?.symbol ?? balance.currency}</strong>
+                    <span>{balance.currency}</span>
+                  </div>
+                </div>
 
-                    <strong className="currency-amount">
-                      {formatAmount(balance.currency, balance.amount)}
-                    </strong>
+                <strong className="currency-amount">
+                  {formatAmount(balance.currency, balance.amount)}
+                </strong>
 
-                    <small>{meta?.name ?? balance.currency}</small>
-                  </article>
-                )
+                <small>{meta?.name ?? balance.currency}</small>
+              </article>
+              )
               })}
             </div>
           )}
