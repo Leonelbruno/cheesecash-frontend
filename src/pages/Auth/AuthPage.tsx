@@ -184,8 +184,8 @@ export default function AuthPage() {
 
           <div className="hero">
             <span className="eyebrow">Tu queso, en un solo lugar</span>
-            <h1>Guarda, mueve y <em>hace crecer</em> tu plata.</h1>
-            <p>Una cuenta para recibir pagos, ahorrar y mandar cash a quien quieras — sin vueltas.</p>
+            <h1>Más monedas. <em>Menos vueltas.</em></h1>
+            <p>Operá con ARS, USD, EUR y BTC desde un solo lugar — tasas reales, transferencias instantáneas y sin comisiones ocultas.</p>
             <div className="wheel-wrap">
               <div className="wheel">
                 <CheeseCashLogo size={150} />
