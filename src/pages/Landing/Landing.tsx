@@ -460,6 +460,26 @@ export default function Landing() {
         </div>
       </section>
 
+      {/* ── Gráfico de precios ── */}
+      {/* TODO: reemplazar el contenido de esta sección con el componente de Gonza */}
+      <section style={{ padding: '0 48px 80px', maxWidth: 1100, margin: '0 auto' }}>
+        <p className="section-label">Evolución del mercado</p>
+        <h2 className="section-title" style={{ marginBottom: 32 }}>Seguí el precio en tiempo real</h2>
+        <div style={{
+          background: '#141210', border: '1px solid rgba(232,196,104,0.14)', borderRadius: 20,
+          minHeight: 260, display: 'flex', alignItems: 'center', justifyContent: 'center',
+          flexDirection: 'column', gap: 12,
+        }}>
+          {/* Gonza: insertá acá el componente del gráfico */}
+          <svg width="36" height="36" viewBox="0 0 24 24" fill="none">
+            <polyline points="22 12 18 12 15 21 9 3 6 12 2 12" stroke="#f2d488" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/>
+          </svg>
+          <span style={{ fontFamily: 'Inter, sans-serif', fontSize: 13, color: '#9a927f' }}>
+            Gráfico en construcción
+          </span>
+        </div>
+      </section>
+
       {/* ── Features ── */}
       <section className="landing-features">
         <p className="section-label">¿Qué podés hacer?</p>
