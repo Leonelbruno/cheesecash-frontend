@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { api } from '../../services/api'
-import MovimientosList, { HistoryItem, TxDetail } from '../../components/MovimientosList/MovimientosList'
+import MovimientosList, { type HistoryItem, type TxDetail } from '../../components/MovimientosList/MovimientosList'
 
 const C = {
   card: '#141210', cardBorder: 'rgba(232,196,104,0.14)',
