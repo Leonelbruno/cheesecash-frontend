@@ -339,6 +339,8 @@
 @media (max-width: 768px) {
   .landing-nav { padding: 16px 20px; }
   .landing-nav-wordmark { font-size: 15px; }
+  .btn-outline { padding: 7px 14px; font-size: 13px; }
+  .btn-gold { padding: 7px 14px; font-size: 13px; }
   .landing-hero { padding: 60px 20px 60px; }
   .hero-glow { width: 300px; }
   .landing-stats { margin: 0 20px; flex-wrap: wrap; }

@@ -1,4 +1,5 @@
 import { NavLink, Outlet, useNavigate } from 'react-router-dom'
+import { useState } from 'react'
 import { useAuth } from '../../context/useAuth'
 import CheeseCashLogo from '../CheeseCashLogo/CheeseCashLogo'
 import Notifications from '../Notifications/Notifications'
@@ -118,6 +119,7 @@ function BottomNav() {
 export default function Layout() {
   const { user, logout } = useAuth()
   const navigate = useNavigate()
+  const [drawerOpen, setDrawerOpen] = useState(false)
 
   const handleLogout = () => {
     logout()
@@ -144,6 +146,17 @@ export default function Layout() {
         </div>
 
         <div className="mobile-header-user">
+          <button
+            className="mobile-hamburger"
+            onClick={() => setDrawerOpen(v => !v)}
+            aria-label="Menú"
+          >
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round">
+              <line x1="3" y1="6" x2="21" y2="6" />
+              <line x1="3" y1="12" x2="21" y2="12" />
+              <line x1="3" y1="18" x2="21" y2="18" />
+            </svg>
+          </button>
           <div className="user-avatar">{initials}</div>
           <button
             className="mobile-logout"
@@ -155,6 +168,37 @@ export default function Layout() {
           </button>
         </div>
       </header>
+
+      {/* Drawer mobile */}
+      {drawerOpen && (
+        <div className="mobile-drawer-overlay" onClick={() => setDrawerOpen(false)}>
+          <nav className="mobile-drawer" onClick={e => e.stopPropagation()}>
+            <div className="mobile-drawer-header">
+              <span className="wordmark wordmark--gradient" style={{ fontFamily: 'Poppins, sans-serif', fontWeight: 700, fontSize: 16 }}>Menú</span>
+              <button className="mobile-drawer-close" onClick={() => setDrawerOpen(false)}>✕</button>
+            </div>
+            {NAV_ITEMS.map(({ to, label, Icon }) => (
+              <NavLink
+                key={to}
+                to={to}
+                className={({ isActive }) => `drawer-link${isActive ? ' active' : ''}`}
+                onClick={() => setDrawerOpen(false)}
+              >
+                {({ isActive }) => (
+                  <>
+                    <span className="nav-icon"><Icon active={isActive} /></span>
+                    <span>{label}</span>
+                  </>
+                )}
+              </NavLink>
+            ))}
+            <button className="drawer-logout" onClick={() => { setDrawerOpen(false); handleLogout() }}>
+              <span className="nav-icon"><IconLogout /></span>
+              <span>Cerrar sesión</span>
+            </button>
+          </nav>
+        </div>
+      )}
 
       {/* Sidebar (desktop) */}
       <aside className="sidebar">
