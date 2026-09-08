@@ -2,9 +2,8 @@ import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import CheeseCashLogo from '../../components/CheeseCashLogo/CheeseCashLogo'
 import { api } from '../../services/api'
+import { getAllRates } from '../../services/rates'
 import './Landing.css'
-
-const API = 'https://cheesecash-back-production.up.railway.app/api'
 
 const C = {
   gold: '#f2d488', goldMid: '#d9a942',
@@ -370,8 +369,7 @@ export default function Landing() {
   const [rates, setRates] = useState<Record<string, number> | null>(null)
 
   useEffect(() => {
-    fetch(`${API}/rates`)
-      .then(r => r.json())
+    getAllRates()
       .then(data => setRates(data))
       .catch(() => {/* silencioso, fallback a null */ })
   }, [])
