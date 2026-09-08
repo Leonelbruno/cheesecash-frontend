@@ -134,13 +134,14 @@ interface RateResponse {
 }
 
 /* ── Helpers ── */
-// rates[X] = cuántos ARS vale 1 unidad de X  (ej: USD→1480, EUR→1756, BTC→116M)
+// rates keys: "FROM_TO" → valor directo del endpoint
 function getRate(rates: Record<string, number>, from: string, to: string): number {
   if (from === to) return 1
-  const fromArs = rates[from]
-  const toArs = rates[to]
-  if (!fromArs || !toArs) return 1
-  return fromArs / toArs
+  const direct = rates[`${from}_${to}`]
+  if (direct) return direct
+  const inverse = rates[`${to}_${from}`]
+  if (inverse) return 1 / inverse
+  return 1
 }
 
 function formatResult(value: number, currency: string): string {
@@ -421,15 +422,20 @@ export default function Landing() {
   const [rates, setRates] = useState<Record<string, number> | null>(null)
 
   useEffect(() => {
-    // Cada par se fetchea directo contra ARS para garantizar consistencia con el conversor
-    Promise.all([
-      api.get<{ rate: number }>('/rates?from=USD&to=ARS').then(r => ['USD', r.rate] as const),
-      api.get<{ rate: number }>('/rates?from=EUR&to=ARS').then(r => ['EUR', r.rate] as const),
-      api.get<{ rate: number }>('/rates?from=BTC&to=ARS').then(r => ['BTC', r.rate] as const),
-    ])
+    // Fetcha los 6 pares directos para que todas las combinaciones sean exactas (sin cross-rates)
+    const PAIRS: [string, string][] = [
+      ['USD', 'ARS'], ['EUR', 'ARS'], ['BTC', 'ARS'],
+      ['USD', 'EUR'], ['USD', 'BTC'], ['EUR', 'BTC'],
+    ]
+    Promise.all(
+      PAIRS.map(([from, to]) =>
+        api.get<{ rate: number }>(`/rates?from=${from}&to=${to}`)
+          .then(r => [`${from}_${to}`, r.rate] as const)
+      )
+    )
       .then(pairs => {
-        const map: Record<string, number> = { ARS: 1 }
-        for (const [cur, rate] of pairs) map[cur] = rate
+        const map: Record<string, number> = {}
+        for (const [key, rate] of pairs) map[key] = rate
         setRates(map)
       })
       .catch(() => {/* silencioso */})
