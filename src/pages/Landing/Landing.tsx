@@ -2,7 +2,6 @@ import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import CheeseCashLogo from '../../components/CheeseCashLogo/CheeseCashLogo'
 import { api } from '../../services/api'
-import { getAllRates } from '../../services/rates'
 import './Landing.css'
 
 const C = {
@@ -369,9 +368,18 @@ export default function Landing() {
   const [rates, setRates] = useState<Record<string, number> | null>(null)
 
   useEffect(() => {
-    getAllRates()
-      .then(data => setRates(data))
-      .catch(() => {/* silencioso, fallback a null */ })
+    // Usamos el mismo endpoint por par que el conversor para garantizar consistencia
+    Promise.all([
+      api.get<{ rate: number }>('/rates?from=USD&to=ARS').then(r => ['ARS', r.rate] as const),
+      api.get<{ rate: number }>('/rates?from=USD&to=EUR').then(r => ['EUR', r.rate] as const),
+      api.get<{ rate: number }>('/rates?from=USD&to=BTC').then(r => ['BTC', r.rate] as const),
+    ])
+      .then(pairs => {
+        const map: Record<string, number> = { USD: 1 }
+        for (const [cur, rate] of pairs) map[cur] = rate
+        setRates(map)
+      })
+      .catch(() => {/* silencioso */ })
   }, [])
 
   return (
