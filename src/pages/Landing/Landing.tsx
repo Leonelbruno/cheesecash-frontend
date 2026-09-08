@@ -91,30 +91,39 @@ const NAV_LINKS = [
   { label: 'Contacto', href: '#contacto' },
 ]
 
-function FaqItem({ q, a }: { q: string; a: string }) {
+function FaqItem({ q, a, n }: { q: string; a: string; n: string }) {
   const [open, setOpen] = useState(false)
   return (
-    <div style={{
-      border: `1px solid ${open ? 'rgba(232,196,104,0.3)' : 'rgba(232,196,104,0.1)'}`,
-      borderRadius: 14, overflow: 'hidden', transition: 'border-color 0.2s',
-    }}>
-      <button
-        onClick={() => setOpen(v => !v)}
-        style={{
-          width: '100%', display: 'flex', justifyContent: 'space-between', alignItems: 'center',
-          padding: '18px 24px', background: 'none', border: 'none', cursor: 'pointer',
-          textAlign: 'left',
-        }}
-      >
-        <span style={{ fontFamily: 'Inter, sans-serif', fontWeight: 600, fontSize: 15, color: '#f6efdf' }}>{q}</span>
-        <span style={{ color: '#f2d488', fontSize: 20, flexShrink: 0, marginLeft: 16, transition: 'transform 0.2s', transform: open ? 'rotate(45deg)' : 'none' }}>+</span>
-      </button>
-      {open && (
-        <div style={{ padding: '0 24px 18px', fontFamily: 'Inter, sans-serif', fontSize: 14, color: '#9a927f', lineHeight: 1.7 }}>
-          {a}
+    <button
+      onClick={() => setOpen(v => !v)}
+      style={{
+        display: 'flex', gap: 20, alignItems: 'flex-start', width: '100%',
+        background: open ? 'rgba(242,212,136,0.04)' : 'transparent',
+        border: `1px solid ${open ? 'rgba(242,212,136,0.2)' : 'rgba(232,196,104,0.08)'}`,
+        borderRadius: 16, padding: '20px 24px', cursor: 'pointer',
+        textAlign: 'left', transition: 'all 0.2s',
+      }}
+    >
+      <span style={{
+        fontFamily: 'JetBrains Mono, monospace', fontSize: 11, fontWeight: 700,
+        color: open ? '#f2d488' : '#5c584c', flexShrink: 0, marginTop: 2,
+        letterSpacing: 1, transition: 'color 0.2s',
+      }}>{n}</span>
+      <div style={{ flex: 1 }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 12 }}>
+          <span style={{ fontFamily: 'Inter, sans-serif', fontWeight: 600, fontSize: 14, color: '#f6efdf' }}>{q}</span>
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke={open ? '#f2d488' : '#5c584c'}
+            strokeWidth="2" strokeLinecap="round" style={{ flexShrink: 0, transition: 'transform 0.2s, stroke 0.2s', transform: open ? 'rotate(180deg)' : 'none' }}>
+            <polyline points="6 9 12 15 18 9" />
+          </svg>
         </div>
-      )}
-    </div>
+        {open && (
+          <p style={{ fontFamily: 'Inter, sans-serif', fontSize: 13, color: '#9a927f', lineHeight: 1.75, margin: '12px 0 0' }}>
+            {a}
+          </p>
+        )}
+      </div>
+    </button>
   )
 }
 
@@ -125,14 +134,13 @@ interface RateResponse {
 }
 
 /* ── Helpers ── */
+// rates[X] = cuántos ARS vale 1 unidad de X  (ej: USD→1480, EUR→1756, BTC→116M)
 function getRate(rates: Record<string, number>, from: string, to: string): number {
   if (from === to) return 1
-  // rates está en formato "cuántas unidades de X por 1 USD"
-  // para ir de from a to: (1/rates[from]) * rates[to]
-  const fromUsd = from === 'USD' ? 1 : rates[from]
-  const toUsd = to === 'USD' ? 1 : rates[to]
-  if (!fromUsd || !toUsd) return 1
-  return toUsd / fromUsd
+  const fromArs = rates[from]
+  const toArs = rates[to]
+  if (!fromArs || !toArs) return 1
+  return fromArs / toArs
 }
 
 function formatResult(value: number, currency: string): string {
@@ -413,18 +421,18 @@ export default function Landing() {
   const [rates, setRates] = useState<Record<string, number> | null>(null)
 
   useEffect(() => {
-    // Usamos el mismo endpoint por par que el conversor para garantizar consistencia
+    // Cada par se fetchea directo contra ARS para garantizar consistencia con el conversor
     Promise.all([
-      api.get<{ rate: number }>('/rates?from=USD&to=ARS').then(r => ['ARS', r.rate] as const),
-      api.get<{ rate: number }>('/rates?from=USD&to=EUR').then(r => ['EUR', r.rate] as const),
-      api.get<{ rate: number }>('/rates?from=USD&to=BTC').then(r => ['BTC', r.rate] as const),
+      api.get<{ rate: number }>('/rates?from=USD&to=ARS').then(r => ['USD', r.rate] as const),
+      api.get<{ rate: number }>('/rates?from=EUR&to=ARS').then(r => ['EUR', r.rate] as const),
+      api.get<{ rate: number }>('/rates?from=BTC&to=ARS').then(r => ['BTC', r.rate] as const),
     ])
       .then(pairs => {
-        const map: Record<string, number> = { USD: 1 }
+        const map: Record<string, number> = { ARS: 1 }
         for (const [cur, rate] of pairs) map[cur] = rate
         setRates(map)
       })
-      .catch(() => {/* silencioso */ })
+      .catch(() => {/* silencioso */})
   }, [])
 
   return (
@@ -567,48 +575,49 @@ export default function Landing() {
       </section>
 
       {/* ── FAQ ── */}
-      <section id="faq" style={{ padding: '80px 48px', maxWidth: 760, margin: '0 auto' }}>
-        <p className="section-label">Preguntas frecuentes</p>
-        <h2 className="section-title" style={{ marginBottom: 40 }}>Resolvemos tus dudas</h2>
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-          {FAQ_ITEMS.map(item => <FaqItem key={item.q} q={item.q} a={item.a} />)}
+      <section id="faq" style={{ padding: '80px 48px', maxWidth: 800, margin: '0 auto' }}>
+        <p className="section-label">FAQ</p>
+        <h2 className="section-title" style={{ marginBottom: 8 }}>Lo que más nos preguntan</h2>
+        <p style={{ fontFamily: 'Inter, sans-serif', fontSize: 15, color: '#9a927f', marginBottom: 40 }}>
+          Si tu duda no está acá, escribinos directo.
+        </p>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+          {FAQ_ITEMS.map((item, i) => (
+            <FaqItem key={item.q} q={item.q} a={item.a} n={String(i + 1).padStart(2, '0')} />
+          ))}
         </div>
       </section>
 
       {/* ── Contacto ── */}
-      <section id="contacto" style={{ padding: '0 48px 80px', maxWidth: 760, margin: '0 auto' }}>
+      <section id="contacto" style={{ padding: '0 48px 80px', maxWidth: 800, margin: '0 auto' }}>
         <div style={{
+          display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+          gap: 32, flexWrap: 'wrap',
           background: '#141210', border: '1px solid rgba(232,196,104,0.14)',
-          borderRadius: 20, padding: '48px 40px', textAlign: 'center',
+          borderRadius: 20, padding: '36px 40px',
         }}>
-          <div style={{ width: 56, height: 56, borderRadius: '50%', background: 'rgba(242,212,136,0.1)', border: '1px solid rgba(242,212,136,0.2)', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 20px' }}>
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#f2d488" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
-              <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/>
-            </svg>
+          <div>
+            <p style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: 10, letterSpacing: 3, color: '#d9a942', textTransform: 'uppercase', margin: '0 0 10px' }}>Soporte</p>
+            <h3 style={{ fontFamily: 'Poppins, sans-serif', fontWeight: 700, fontSize: 20, color: '#f6efdf', margin: '0 0 8px' }}>¿Quedó alguna duda?</h3>
+            <p style={{ fontFamily: 'Inter, sans-serif', fontSize: 13, color: '#9a927f', margin: 0 }}>
+              Escribinos y te respondemos a la brevedad.
+            </p>
           </div>
-          <h3 style={{ fontFamily: 'Poppins, sans-serif', fontWeight: 700, fontSize: 22, color: '#f6efdf', margin: '0 0 10px' }}>¿Tenés alguna consulta?</h3>
-          <p style={{ fontFamily: 'Inter, sans-serif', fontSize: 14, color: '#9a927f', margin: '0 0 28px' }}>
-            Nuestro equipo está disponible para ayudarte con cualquier duda sobre la plataforma.
-          </p>
           <a
             href="mailto:cheesecash.team@gmail.com"
             style={{
-              display: 'inline-flex', alignItems: 'center', gap: 8,
-              padding: '12px 28px', borderRadius: 12,
+              display: 'inline-flex', alignItems: 'center', gap: 10, flexShrink: 0,
+              padding: '13px 28px', borderRadius: 12,
               background: 'linear-gradient(135deg, #f2d488, #d9a942)',
               color: '#161311', fontFamily: 'Inter, sans-serif',
               fontWeight: 700, fontSize: 14, textDecoration: 'none',
-              transition: 'opacity 0.15s',
             }}
           >
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
               <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/>
             </svg>
-            Contactar soporte
-          </a>
-          <div style={{ marginTop: 16, fontFamily: 'JetBrains Mono, monospace', fontSize: 12, color: '#5c584c' }}>
             cheesecash.team@gmail.com
-          </div>
+          </a>
         </div>
       </section>
 
