@@ -30,9 +30,9 @@ const CURRENCY_META: Record<string, { symbol: string; name: string }> = {
 }
 
 const quickActions = [
-  { label: 'Comprar', icon: ShoppingBag },
-  { label: 'Vender', icon: ArrowUpFromLine },
-  { label: 'Intercambiar', icon: ArrowLeftRight },
+  { label: 'Comprar', icon: ShoppingBag, mode: 'comprar' },
+  { label: 'Vender', icon: ArrowUpFromLine, mode: 'vender' },
+  { label: 'Intercambiar', icon: ArrowLeftRight, mode: 'intercambiar' },
 ]
 
 function formatAmount(currency: string, amount: string) {
@@ -243,7 +243,7 @@ function Dashboard() {
                 <button
                   className="quick-action"
                   key={action.label}
-                  onClick={() => navigate('/operar')}
+                  onClick={() => navigate(`/operar?modo=${action.mode}`)}
                 >
                   <Icon size={24} />
                   <strong>{action.label}</strong>

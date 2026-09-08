@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useState } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate, useSearchParams } from 'react-router-dom'
 import { api } from '../../services/api'
 import {
   CURRENCIES,
@@ -37,6 +37,14 @@ interface ApiTransaction {
 
 type Tab = 'comprar' | 'vender' | 'intercambiar'
 
+function isTab(value: string | null): value is Tab {
+  return (
+    value === 'comprar' ||
+    value === 'vender' ||
+    value === 'intercambiar'
+  )
+}
+
 const TABS: { id: Tab; label: string }[] = [
   { id: 'comprar', label: 'Comprar' },
   { id: 'vender', label: 'Vender' },
@@ -67,8 +75,13 @@ const microStyle: React.CSSProperties = {
 
 export default function Operar() {
   const navigate = useNavigate()
+  const [searchParams, setSearchParams] = useSearchParams()
 
-  const [tab, setTab] = useState<Tab>('comprar')
+  const modo = searchParams.get('modo')
+
+  const [tab, setTab] = useState<Tab>(() =>
+    isTab(modo) ? modo : 'comprar',
+  )
   const [from, setFrom] = useState('ARS')
   const [to, setTo] = useState('USD')
   const [amount, setAmount] = useState('')
@@ -130,6 +143,11 @@ export default function Operar() {
     : ''
 
   const canSubmit = hasAmount && !insufficient && !submitting && rate !== null
+
+  function handleTabChange(newTab: Tab) {
+    setTab(newTab)
+    setSearchParams({ modo: newTab }, { replace: true })
+  }
 
   async function handleSubmit() {
     if (!canSubmit) return
@@ -247,7 +265,7 @@ export default function Operar() {
           transform: `translateX(${TABS.findIndex(t => t.id === tab) * 100}%)`,
         }} />
         {TABS.map(t => (
-          <button key={t.id} onClick={() => setTab(t.id)} style={{
+          <button key={t.id} onClick={() => handleTabChange(t.id)} style={{
             flex: 1, padding: '10px 0', position: 'relative', zIndex: 1,
             background: 'transparent', border: 'none', borderRadius: 10,
             fontFamily: 'Poppins, sans-serif', fontWeight: 600, fontSize: 14,
