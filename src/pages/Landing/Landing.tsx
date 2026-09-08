@@ -610,7 +610,9 @@ export default function Landing() {
             </p>
           </div>
           <a
-            href="mailto:cheesecash.team@gmail.com"
+            href="https://mail.google.com/mail/?view=cm&to=cheesecash.team@gmail.com"
+            target="_blank"
+            rel="noopener noreferrer"
             style={{
               display: 'inline-flex', alignItems: 'center', gap: 10, flexShrink: 0,
               padding: '13px 28px', borderRadius: 12,
