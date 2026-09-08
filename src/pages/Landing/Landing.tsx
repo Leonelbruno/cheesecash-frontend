@@ -118,7 +118,7 @@ function RatesSection({ rates }: { rates: Record<string, number> | null }) {
     <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
       {/* Selector de moneda base */}
       <div style={{ display: 'flex', alignItems: 'center', gap: 10, justifyContent: 'flex-end' }}>
-        <span style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: 11, color: C.muted }}>Ver en</span>
+        <span style={{ fontFamily: 'Inter, sans-serif', fontSize: 12, color: C.muted, letterSpacing: 1 }}>Cotizar en</span>
         {CURRENCIES.map(c => (
           <button key={c} onClick={() => setBase(c)} style={{
             display: 'flex', alignItems: 'center', gap: 5,
