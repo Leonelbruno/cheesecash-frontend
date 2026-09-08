@@ -51,8 +51,43 @@ const TX_LABEL: Record<string, string> = {
   compra: 'Compra', venta: 'Venta', intercambio: 'Intercambio', transferencia: 'Transferencia',
   recarga: 'Recarga',
 }
-const TX_EMOJI: Record<string, string> = {
-  compra: '💰', venta: '📤', intercambio: '🔄', transferencia: '📲', recarga: '⬇️',
+function TxIcon({ tipo, color }: { tipo: string; color: string }) {
+  const s = { stroke: color, strokeWidth: 1.8, strokeLinecap: 'round' as const, strokeLinejoin: 'round' as const, fill: 'none' }
+  if (tipo === 'compra') return (
+    <svg width="20" height="20" viewBox="0 0 24 24" {...s}>
+      <path d="M12 2v20M17 5H9.5a3.5 3.5 0 000 7h5a3.5 3.5 0 010 7H6" stroke={color} strokeWidth={1.8} strokeLinecap="round" fill="none"/>
+    </svg>
+  )
+  if (tipo === 'venta') return (
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+      <path d="M12 19V5M5 12l7-7 7 7" stroke={color} strokeWidth={1.8} strokeLinecap="round" strokeLinejoin="round"/>
+    </svg>
+  )
+  if (tipo === 'intercambio') return (
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+      <polyline points="17 1 21 5 17 9" stroke={color} strokeWidth={1.8} strokeLinecap="round" strokeLinejoin="round"/>
+      <path d="M3 11V9a4 4 0 014-4h14" stroke={color} strokeWidth={1.8} strokeLinecap="round" strokeLinejoin="round"/>
+      <polyline points="7 23 3 19 7 15" stroke={color} strokeWidth={1.8} strokeLinecap="round" strokeLinejoin="round"/>
+      <path d="M21 13v2a4 4 0 01-4 4H3" stroke={color} strokeWidth={1.8} strokeLinecap="round" strokeLinejoin="round"/>
+    </svg>
+  )
+  if (tipo === 'transferencia') return (
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+      <line x1="22" y1="2" x2="11" y2="13" stroke={color} strokeWidth={1.8} strokeLinecap="round"/>
+      <polygon points="22 2 15 22 11 13 2 9 22 2" stroke={color} strokeWidth={1.8} strokeLinecap="round" strokeLinejoin="round"/>
+    </svg>
+  )
+  if (tipo === 'recarga') return (
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+      <path d="M12 5v14M5 12l7 7 7-7" stroke={color} strokeWidth={1.8} strokeLinecap="round" strokeLinejoin="round"/>
+    </svg>
+  )
+  return (
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+      <circle cx="12" cy="12" r="10" stroke={color} strokeWidth={1.8}/>
+      <path d="M12 8v4l3 3" stroke={color} strokeWidth={1.8} strokeLinecap="round"/>
+    </svg>
+  )
 }
 
 const FILTERS = ['Todas', 'Compra', 'Venta', 'Intercambio', 'Transferencia', 'Recarga']
@@ -189,9 +224,9 @@ export default function Historial() {
                 <div style={{
                   width: 40, height: 40, borderRadius: '50%',
                   display: 'flex', alignItems: 'center', justifyContent: 'center',
-                  fontSize: 18, background: '#1a1510', flexShrink: 0,
+                  background: TX_COLORS[tipo] ?? 'rgba(154,146,127,0.12)', flexShrink: 0,
                 }}>
-                  {TX_EMOJI[tipo] ?? '💱'}
+                  <TxIcon tipo={tipo} color={TX_TEXT[tipo] ?? '#9a927f'} />
                 </div>
                 <div style={{ flex: 1, minWidth: 0 }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
