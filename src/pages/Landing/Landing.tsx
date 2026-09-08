@@ -73,6 +73,51 @@ const STEPS = [
   { n: '03', title: 'Operá libremente', desc: 'Comprá, vendé, intercambiá y transferí desde cualquier dispositivo.' },
 ]
 
+const FAQ_ITEMS = [
+  { q: '¿Qué monedas puedo usar?', a: 'Cheese Cash soporta cuatro monedas: Peso Argentino (ARS), Dólar Estadounidense (USD), Euro (EUR) y Bitcoin (BTC). Podés operar entre todas ellas al instante.' },
+  { q: '¿Las transferencias tienen costo?', a: 'No. Las transferencias entre usuarios de Cheese Cash son completamente gratuitas y se acreditan en segundos.' },
+  { q: '¿Cómo recargo mi billetera?', a: 'Desde la sección "Recargar" dentro de la app podés agregar saldo a cualquiera de tus billeteras de forma rápida y sencilla.' },
+  { q: '¿Mis datos están seguros?', a: 'Sí. Usamos autenticación con JWT y todas las conexiones están cifradas. Tu información nunca se comparte con terceros.' },
+  { q: '¿El conversor modifica mi saldo?', a: 'No. El conversor de la landing y el de la app son herramientas informativas con tasas reales. No afectan tu saldo hasta que confirmás una operación.' },
+  { q: '¿Necesito verificar mi identidad?', a: 'No. Solo necesitás un email y una contraseña para registrarte y empezar a operar de inmediato.' },
+]
+
+const NAV_LINKS = [
+  { label: 'Inicio', href: '#inicio' },
+  { label: 'Cotizaciones', href: '#cotizaciones' },
+  { label: 'Conversor', href: '#conversor' },
+  { label: 'Características', href: '#features' },
+  { label: 'FAQ', href: '#faq' },
+  { label: 'Contacto', href: '#contacto' },
+]
+
+function FaqItem({ q, a }: { q: string; a: string }) {
+  const [open, setOpen] = useState(false)
+  return (
+    <div style={{
+      border: `1px solid ${open ? 'rgba(232,196,104,0.3)' : 'rgba(232,196,104,0.1)'}`,
+      borderRadius: 14, overflow: 'hidden', transition: 'border-color 0.2s',
+    }}>
+      <button
+        onClick={() => setOpen(v => !v)}
+        style={{
+          width: '100%', display: 'flex', justifyContent: 'space-between', alignItems: 'center',
+          padding: '18px 24px', background: 'none', border: 'none', cursor: 'pointer',
+          textAlign: 'left',
+        }}
+      >
+        <span style={{ fontFamily: 'Inter, sans-serif', fontWeight: 600, fontSize: 15, color: '#f6efdf' }}>{q}</span>
+        <span style={{ color: '#f2d488', fontSize: 20, flexShrink: 0, marginLeft: 16, transition: 'transform 0.2s', transform: open ? 'rotate(45deg)' : 'none' }}>+</span>
+      </button>
+      {open && (
+        <div style={{ padding: '0 24px 18px', fontFamily: 'Inter, sans-serif', fontSize: 14, color: '#9a927f', lineHeight: 1.7 }}>
+          {a}
+        </div>
+      )}
+    </div>
+  )
+}
+
 interface RateResponse {
   from: string
   to: string
@@ -390,6 +435,11 @@ export default function Landing() {
         <div className="landing-nav-logo">
           <CheeseCashLogo size={28} withName />
         </div>
+        <div className="landing-nav-links">
+          {NAV_LINKS.map(l => (
+            <a key={l.href} href={l.href} className="landing-nav-link">{l.label}</a>
+          ))}
+        </div>
         <div className="landing-nav-actions">
           <a className="btn-outline" onClick={() => navigate('/login')} style={{ cursor: 'pointer' }}>
             Iniciar sesión
@@ -401,7 +451,7 @@ export default function Landing() {
       </nav>
 
       {/* ── Hero ── */}
-      <section className="landing-hero">
+      <section id="inicio" className="landing-hero">
         <div className="hero-glow" />
         <div className="hero-coin">
           <CheeseCashLogo size={100} />
@@ -439,7 +489,7 @@ export default function Landing() {
       </div>
 
       {/* ── Cotizaciones en tiempo real ── */}
-      <section style={{ padding: '80px 48px', maxWidth: 1100, margin: '0 auto' }}>
+      <section id="cotizaciones" style={{ padding: '80px 48px', maxWidth: 1100, margin: '0 auto' }}>
         <p className="section-label">Cotizaciones en vivo</p>
         <h2 className="section-title">Precios reales, ahora mismo</h2>
         <RatesSection rates={rates} />
@@ -451,7 +501,7 @@ export default function Landing() {
       </section>
 
       {/* ── Conversor ── */}
-      <section style={{ padding: '0 48px 80px', maxWidth: 580, margin: '0 auto' }}>
+      <section id="conversor" style={{ padding: '0 48px 80px', maxWidth: 580, margin: '0 auto' }}>
         <p className="section-label">Probalo ahora</p>
         <h2 className="section-title" style={{ marginBottom: 32 }}>Conversor con tasas reales</h2>
         <ConversorSection />
@@ -487,7 +537,7 @@ export default function Landing() {
       </section>
 
       {/* ── Features ── */}
-      <section className="landing-features">
+      <section id="features" className="landing-features">
         <p className="section-label">¿Qué podés hacer?</p>
         <h2 className="section-title">Todo lo que necesitás en un solo lugar</h2>
         <div className="features-grid">
@@ -513,6 +563,52 @@ export default function Landing() {
               <div className="step-desc">{s.desc}</div>
             </div>
           ))}
+        </div>
+      </section>
+
+      {/* ── FAQ ── */}
+      <section id="faq" style={{ padding: '80px 48px', maxWidth: 760, margin: '0 auto' }}>
+        <p className="section-label">Preguntas frecuentes</p>
+        <h2 className="section-title" style={{ marginBottom: 40 }}>Resolvemos tus dudas</h2>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+          {FAQ_ITEMS.map(item => <FaqItem key={item.q} q={item.q} a={item.a} />)}
+        </div>
+      </section>
+
+      {/* ── Contacto ── */}
+      <section id="contacto" style={{ padding: '0 48px 80px', maxWidth: 760, margin: '0 auto' }}>
+        <div style={{
+          background: '#141210', border: '1px solid rgba(232,196,104,0.14)',
+          borderRadius: 20, padding: '48px 40px', textAlign: 'center',
+        }}>
+          <div style={{ width: 56, height: 56, borderRadius: '50%', background: 'rgba(242,212,136,0.1)', border: '1px solid rgba(242,212,136,0.2)', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 20px' }}>
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#f2d488" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/>
+            </svg>
+          </div>
+          <h3 style={{ fontFamily: 'Poppins, sans-serif', fontWeight: 700, fontSize: 22, color: '#f6efdf', margin: '0 0 10px' }}>¿Tenés alguna consulta?</h3>
+          <p style={{ fontFamily: 'Inter, sans-serif', fontSize: 14, color: '#9a927f', margin: '0 0 28px' }}>
+            Nuestro equipo está disponible para ayudarte con cualquier duda sobre la plataforma.
+          </p>
+          <a
+            href="mailto:cheesecash.team@gmail.com"
+            style={{
+              display: 'inline-flex', alignItems: 'center', gap: 8,
+              padding: '12px 28px', borderRadius: 12,
+              background: 'linear-gradient(135deg, #f2d488, #d9a942)',
+              color: '#161311', fontFamily: 'Inter, sans-serif',
+              fontWeight: 700, fontSize: 14, textDecoration: 'none',
+              transition: 'opacity 0.15s',
+            }}
+          >
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/>
+            </svg>
+            Contactar soporte
+          </a>
+          <div style={{ marginTop: 16, fontFamily: 'JetBrains Mono, monospace', fontSize: 12, color: '#5c584c' }}>
+            cheesecash.team@gmail.com
+          </div>
         </div>
       </section>
 

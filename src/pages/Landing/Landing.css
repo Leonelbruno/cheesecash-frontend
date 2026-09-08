@@ -1,3 +1,7 @@
+html {
+  scroll-behavior: smooth;
+}
+
 /* ── Reset / Base ── */
 .landing {
   background: #0a0908;
@@ -33,6 +37,25 @@
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
+}
+.landing-nav-links {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+.landing-nav-link {
+  padding: 7px 14px;
+  border-radius: 8px;
+  color: #9a927f;
+  font-family: 'Inter', sans-serif;
+  font-size: 13px;
+  font-weight: 500;
+  text-decoration: none;
+  transition: color 0.15s, background 0.15s;
+}
+.landing-nav-link:hover {
+  color: #f2d488;
+  background: rgba(242,212,136,0.06);
 }
 .landing-nav-actions {
   display: flex;
@@ -338,6 +361,7 @@
 /* ── Responsive ── */
 @media (max-width: 768px) {
   .landing-nav { padding: 16px 20px; }
+  .landing-nav-links { display: none; }
   .landing-nav-wordmark { font-size: 15px; }
   .btn-outline { padding: 7px 14px; font-size: 13px; }
   .btn-gold { padding: 7px 14px; font-size: 13px; }
