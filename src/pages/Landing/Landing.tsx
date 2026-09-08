@@ -134,14 +134,13 @@ interface RateResponse {
 }
 
 /* ── Helpers ── */
+// rates[X] = cuántos ARS vale 1 unidad de X  (ej: USD→1480, EUR→1756, BTC→116M)
 function getRate(rates: Record<string, number>, from: string, to: string): number {
   if (from === to) return 1
-  // rates está en formato "cuántas unidades de X por 1 USD"
-  // para ir de from a to: (1/rates[from]) * rates[to]
-  const fromUsd = from === 'USD' ? 1 : rates[from]
-  const toUsd = to === 'USD' ? 1 : rates[to]
-  if (!fromUsd || !toUsd) return 1
-  return toUsd / fromUsd
+  const fromArs = rates[from]
+  const toArs = rates[to]
+  if (!fromArs || !toArs) return 1
+  return fromArs / toArs
 }
 
 function formatResult(value: number, currency: string): string {
@@ -422,18 +421,18 @@ export default function Landing() {
   const [rates, setRates] = useState<Record<string, number> | null>(null)
 
   useEffect(() => {
-    // Usamos el mismo endpoint por par que el conversor para garantizar consistencia
+    // Cada par se fetchea directo contra ARS para garantizar consistencia con el conversor
     Promise.all([
-      api.get<{ rate: number }>('/rates?from=USD&to=ARS').then(r => ['ARS', r.rate] as const),
-      api.get<{ rate: number }>('/rates?from=USD&to=EUR').then(r => ['EUR', r.rate] as const),
-      api.get<{ rate: number }>('/rates?from=USD&to=BTC').then(r => ['BTC', r.rate] as const),
+      api.get<{ rate: number }>('/rates?from=USD&to=ARS').then(r => ['USD', r.rate] as const),
+      api.get<{ rate: number }>('/rates?from=EUR&to=ARS').then(r => ['EUR', r.rate] as const),
+      api.get<{ rate: number }>('/rates?from=BTC&to=ARS').then(r => ['BTC', r.rate] as const),
     ])
       .then(pairs => {
-        const map: Record<string, number> = { USD: 1 }
+        const map: Record<string, number> = { ARS: 1 }
         for (const [cur, rate] of pairs) map[cur] = rate
         setRates(map)
       })
-      .catch(() => {/* silencioso */ })
+      .catch(() => {/* silencioso */})
   }, [])
 
   return (
