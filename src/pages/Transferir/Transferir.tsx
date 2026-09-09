@@ -55,6 +55,7 @@ export default function Transferir() {
   const [myPin, setMyPin] = useState<string | null>(null)
   const [pinCopied, setPinCopied] = useState(false)
   const [balances, setBalances] = useState<ApiBalance[]>([])
+  const [confirming, setConfirming] = useState(false)
   const [submitting, setSubmitting] = useState(false)
   const [error, setError] = useState('')
   const [result, setResult] = useState<ApiTransfer | null>(null)
@@ -93,6 +94,13 @@ export default function Transferir() {
   const destinatarioOk = mode === 'email' ? emailOk : pinOk
   const canSubmit = destinatarioOk && hasAmount && !insufficient && !submitting
 
+  /** El botón del formulario no envía: primero muestra el resumen. */
+  function askConfirmation() {
+    if (!canSubmit) return
+    setError('')
+    setConfirming(true)
+  }
+
   async function handleSubmit() {
     if (!canSubmit) return
     setSubmitting(true)
@@ -106,12 +114,82 @@ export default function Transferir() {
         currency,
         amount: numericAmount,
       })
+      setConfirming(false)
       setResult(transfer)
     } catch (err) {
       setError(err instanceof Error ? err.message : 'No pudimos enviar la transferencia')
     } finally {
       setSubmitting(false)
     }
+  }
+
+  // --- Resumen antes de enviar: última chance de revisar ---
+  if (confirming && !result) {
+    const destino = mode === 'email' ? toEmail.trim() : `PIN ${toPin.trim().toUpperCase()}`
+
+    return (
+      <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center', gap: 24, maxWidth: 420, margin: '40px auto 0' }}>
+        <div>
+          <h2 style={{ fontFamily: 'Poppins, sans-serif', fontWeight: 700, fontSize: 24, color: C.text, margin: 0 }}>
+            Revisá antes de enviar
+          </h2>
+          <p style={{ fontFamily: 'Inter, sans-serif', fontSize: 14, color: C.muted, marginTop: 8, lineHeight: 1.5 }}>
+            Una vez confirmada, la transferencia no se puede deshacer.
+          </p>
+        </div>
+
+        <div style={{ width: '100%', background: C.card, border: `1px solid ${C.cardBorder}`, borderRadius: C.radius, padding: 24, textAlign: 'left', display: 'flex', flexDirection: 'column', gap: 16 }}>
+          <div>
+            <div style={{ ...microStyle, marginBottom: 6 }}>Enviás</div>
+            <div style={{ fontFamily: 'JetBrains Mono, monospace', fontWeight: 700, fontSize: 26, color: C.gold, letterSpacing: '-0.02em' }}>
+              {formatAmount(currency, numericAmount)} {currency}
+            </div>
+          </div>
+
+          <div style={{ height: 1, background: C.cardBorder }} />
+
+          <div>
+            <div style={{ ...microStyle, marginBottom: 6 }}>
+              {mode === 'email' ? 'A la cuenta' : 'Al PIN'}
+            </div>
+            <div style={{ fontFamily: mode === 'email' ? 'Inter, sans-serif' : 'JetBrains Mono, monospace', fontSize: 15, color: C.text, wordBreak: 'break-all' }}>
+              {destino}
+            </div>
+          </div>
+
+          <div style={{ height: 1, background: C.cardBorder }} />
+
+          <div style={{ display: 'flex', justifyContent: 'space-between', gap: 12 }}>
+            <span style={microStyle}>Te queda</span>
+            <span style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: 13, color: C.muted }}>
+              {formatAmount(currency, available - numericAmount)} {currency}
+            </span>
+          </div>
+        </div>
+
+        {error && (
+          <div role="alert" style={{ width: '100%', padding: '12px 14px', borderRadius: 10, background: 'rgba(226,112,95,0.1)', border: `1px solid ${C.danger}`, color: C.danger, fontFamily: 'Inter, sans-serif', fontSize: 13, textAlign: 'left' }}>
+            {error}
+          </div>
+        )}
+
+        <div style={{ width: '100%', display: 'flex', gap: 10 }}>
+          <button
+            onClick={() => setConfirming(false)}
+            disabled={submitting}
+            style={{ flex: 1, padding: '14px 0', borderRadius: 12, border: `1px solid ${C.cardBorder}`, background: 'transparent', color: C.text, fontFamily: 'Poppins, sans-serif', fontWeight: 600, fontSize: 15, cursor: submitting ? 'not-allowed' : 'pointer' }}>
+            Volver
+          </button>
+
+          <button
+            onClick={handleSubmit}
+            disabled={submitting}
+            style={{ flex: 2, padding: '14px 0', borderRadius: 12, border: 'none', background: submitting ? 'rgba(242,212,136,0.2)' : `linear-gradient(135deg, ${C.gold}, ${C.goldMid})`, color: submitting ? C.mutedDark : '#161311', fontFamily: 'Poppins, sans-serif', fontWeight: 700, fontSize: 15, cursor: submitting ? 'not-allowed' : 'pointer' }}>
+            {submitting ? 'Enviando…' : 'Confirmar envío'}
+          </button>
+        </div>
+      </div>
+    )
   }
 
   // --- Monto alto: queda pendiente de confirmación por mail ---
@@ -336,7 +414,7 @@ export default function Transferir() {
         )}
 
         <button
-          onClick={handleSubmit}
+          onClick={askConfirmation}
           disabled={!canSubmit}
           style={{
             padding: '14px 0', borderRadius: 12, border: 'none',
@@ -345,7 +423,7 @@ export default function Transferir() {
             fontFamily: 'Poppins, sans-serif', fontWeight: 700, fontSize: 15,
             cursor: !canSubmit ? 'not-allowed' : 'pointer',
           }}>
-          {submitting ? 'Enviando…' : 'Enviar transferencia'}
+          Revisar transferencia
         </button>
       </div>
     </div>
