@@ -1,6 +1,5 @@
 import { useCallback, useEffect, useState } from 'react'
 import RateChart from '../../components/RateChart/RateChart'
-import './Operar.css'
 import { useNavigate, useSearchParams } from 'react-router-dom'
 import { api } from '../../services/api'
 import {
@@ -251,8 +250,7 @@ export default function Operar() {
 
   // --- Formulario ---
   return (
-    <div className="operar-layout">
-      <div className="operar-form-col">
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 24, maxWidth: 460 }}>
       <div>
         <h2 style={{ fontFamily: 'Poppins, sans-serif', fontWeight: 700, fontSize: 24, color: C.text, margin: 0 }}>Operar</h2>
         <p style={{ fontFamily: 'Inter, sans-serif', fontSize: 14, color: C.muted, marginTop: 4 }}>Comprá, vendé e intercambiá divisas</p>
@@ -357,18 +355,15 @@ export default function Operar() {
           }}>
           {submitting ? 'Procesando…' : 'Confirmar operación'}
         </button>
-        </div>
       </div>
 
-      {/* Sigue al par elegido a la izquierda, sea cual sea la pestaña */}
-      <div className="operar-chart-col">
-        <RateChart
-          from={from}
-          to={to}
-          days={7}
-          title={`1 ${from} en ${to} · últimos 7 días`}
-        />
-      </div>
+      {/* Sigue al par elegido arriba, sea cual sea la pestaña */}
+      <RateChart
+        from={from}
+        to={to}
+        days={7}
+        title={`1 ${from} en ${to} · últimos 7 días`}
+      />
     </div>
   )
 }

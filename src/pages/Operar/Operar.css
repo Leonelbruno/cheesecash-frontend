@@ -2,8 +2,8 @@
    En pantallas chicas se apilan, con el gráfico debajo. */
 .operar-layout {
   display: grid;
-  grid-template-columns: minmax(0, 460px) minmax(0, 1fr);
-  gap: 24px;
+  grid-template-columns: minmax(0, 420px) minmax(320px, 1fr);
+  gap: 28px;
   align-items: start;
 }
 
