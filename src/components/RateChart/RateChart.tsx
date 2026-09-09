@@ -1,7 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import {
   CURRENCIES,
-  CURRENCY_NAMES,
   getRate,
   getRateHistory,
   type RatePoint,
@@ -180,7 +179,7 @@ export default function RateChart({
       <div className="rate-chart-head">
         <div>
           <p className="rate-chart-title">
-            {title ?? `1 ${activeFrom} en ${CURRENCY_NAMES[to] ?? to}`}
+            {title ?? `1 ${activeFrom} en ${to}`}
           </p>
           {shown && (
             <p className="rate-chart-value">
