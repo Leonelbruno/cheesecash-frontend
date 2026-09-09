@@ -15,24 +15,34 @@
 .app-shell {
   display: flex;
   min-height: 100vh;
+  min-height: 100dvh;
   background: var(--bg);
   color: var(--cream);
-  font-family: 'Inter', sans-serif;
+  font-family: "Inter", sans-serif;
 }
 
+/* ── Sidebar (desktop) ── */
 /* ── Sidebar (desktop) ── */
 .sidebar {
   width: 220px;
   flex-shrink: 0;
-  overflow: hidden;
+
   background: var(--panel);
   border-right: 1px solid var(--card-border);
+
   display: flex;
   flex-direction: column;
+
   padding: 28px 0;
+
   position: sticky;
   top: 0;
+
   height: 100vh;
+  height: 100dvh;
+
+  box-sizing: border-box;
+  overflow: hidden;
 }
 
 /* logo */
@@ -47,12 +57,17 @@
 .logo-divider {
   width: 1.5px;
   height: 24px;
-  background: linear-gradient(to bottom, transparent, var(--gold-2), transparent);
+  background: linear-gradient(
+    to bottom,
+    transparent,
+    var(--gold-2),
+    transparent
+  );
   flex-shrink: 0;
 }
 
 .wordmark {
-  font-family: 'Poppins', sans-serif;
+  font-family: "Poppins", sans-serif;
   font-weight: 700;
   font-size: 16px;
   color: var(--cream);
@@ -68,35 +83,57 @@
 /* nav links */
 .sidebar-nav {
   flex: 1;
+  min-height: 0;
+
   display: flex;
   flex-direction: column;
   gap: 4px;
+
   padding: 20px 12px;
+
+  overflow-y: auto;
+  overflow-x: hidden;
 }
 .nav-link {
   display: flex;
   align-items: center;
   gap: 12px;
+
   padding: 11px 12px;
   border-radius: 10px;
+
   text-decoration: none;
   color: var(--muted);
+
   font-size: 14px;
   font-weight: 500;
-  transition: background 0.15s, color 0.15s, border-color 0.15s;
+
+  transition:
+    background-color 0.15s,
+    color 0.15s,
+    border-color 0.15s;
+
   cursor: pointer;
+
   border: 1px solid transparent;
   background: none;
+
   width: 100%;
+  box-sizing: border-box;
+
   text-align: left;
-  font-family: 'Inter', sans-serif;
+  font-family: "Inter", sans-serif;
 }
 .nav-link:hover {
   background: rgba(232, 196, 104, 0.06);
   color: var(--cream);
 }
 .nav-link.active {
-  background: linear-gradient(135deg, rgba(242, 212, 136, 0.13), rgba(217, 169, 66, 0.08));
+  background: linear-gradient(
+    135deg,
+    rgba(242, 212, 136, 0.13),
+    rgba(217, 169, 66, 0.08)
+  );
   color: var(--gold-1);
   border-color: rgba(232, 196, 104, 0.22);
   font-weight: 600;
@@ -113,9 +150,12 @@
 .sidebar-footer {
   padding: 16px 12px 0;
   border-top: 1px solid var(--card-border);
+
   display: flex;
   flex-direction: column;
   gap: 8px;
+
+  flex-shrink: 0;
 }
 .sidebar-user {
   display: flex;
@@ -131,7 +171,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  font-family: 'Poppins', sans-serif;
+  font-family: "Poppins", sans-serif;
   font-weight: 700;
   font-size: 13px;
   color: #161311;
@@ -145,7 +185,7 @@
 .user-info .user-plan {
   font-size: 10px;
   color: var(--gold-2);
-  font-family: 'JetBrains Mono', monospace;
+  font-family: "JetBrains Mono", monospace;
   text-transform: uppercase;
   letter-spacing: 0.08em;
 }
@@ -160,12 +200,14 @@
   background: none;
   color: var(--muted);
   font-size: 13px;
-  font-family: 'Inter', sans-serif;
+  font-family: "Inter", sans-serif;
   font-weight: 500;
   cursor: pointer;
   width: 100%;
   text-align: left;
-  transition: background 0.15s, color 0.15s;
+  transition:
+    background-color 0.15s,
+    color 0.15s;
 }
 .btn-logout:hover {
   background: rgba(226, 112, 95, 0.08);
@@ -253,9 +295,14 @@
     background: none;
     color: var(--muted);
     cursor: pointer;
-    transition: background 0.15s, color 0.15s;
+    transition:
+      background-color 0.15s,
+      color 0.15s;
   }
-  .mobile-hamburger:hover { background: rgba(242,212,136,0.08); color: #f2d488; }
+  .mobile-hamburger:hover {
+    background: rgba(242, 212, 136, 0.08);
+    color: #f2d488;
+  }
 
   .mobile-logout {
     display: flex;
@@ -268,7 +315,10 @@
     background: none;
     color: var(--muted);
     cursor: pointer;
-    transition: background 0.15s, color 0.15s, border-color 0.15s;
+    transition:
+      background-color 0.15s,
+      color 0.15s,
+      border-color 0.15s;
   }
 
   .mobile-logout:hover,
@@ -282,7 +332,7 @@
   .mobile-drawer-overlay {
     position: fixed;
     inset: 0;
-    background: rgba(0,0,0,0.6);
+    background: rgba(0, 0, 0, 0.6);
     z-index: 200;
     display: flex;
     justify-content: flex-end;
@@ -291,7 +341,7 @@
     width: 260px;
     height: 100%;
     background: #141210;
-    border-left: 1px solid rgba(232,196,104,0.14);
+    border-left: 1px solid rgba(232, 196, 104, 0.14);
     display: flex;
     flex-direction: column;
     padding: 0 0 24px;
@@ -299,15 +349,19 @@
     animation: drawer-in 0.2s ease;
   }
   @keyframes drawer-in {
-    from { transform: translateX(100%); }
-    to   { transform: translateX(0); }
+    from {
+      transform: translateX(100%);
+    }
+    to {
+      transform: translateX(0);
+    }
   }
   .mobile-drawer-header {
     display: flex;
     align-items: center;
     justify-content: space-between;
     padding: 16px 20px;
-    border-bottom: 1px solid rgba(232,196,104,0.1);
+    border-bottom: 1px solid rgba(232, 196, 104, 0.1);
     margin-bottom: 8px;
   }
   .mobile-drawer-close {
@@ -325,13 +379,21 @@
     padding: 13px 20px;
     color: #9a927f;
     text-decoration: none;
-    font-family: 'Inter', sans-serif;
+    font-family: "Inter", sans-serif;
     font-size: 14px;
     font-weight: 500;
-    transition: background 0.15s, color 0.15s;
+    transition:
+      background-color 0.15s,
+      color 0.15s;
   }
-  .drawer-link:hover { background: rgba(242,212,136,0.06); color: #f2d488; }
-  .drawer-link.active { color: #f2d488; background: rgba(242,212,136,0.08); }
+  .drawer-link:hover {
+    background: rgba(242, 212, 136, 0.06);
+    color: #f2d488;
+  }
+  .drawer-link.active {
+    color: #f2d488;
+    background: rgba(242, 212, 136, 0.08);
+  }
   .drawer-logout {
     display: flex;
     align-items: center;
@@ -341,14 +403,16 @@
     background: none;
     border: none;
     color: #9a927f;
-    font-family: 'Inter', sans-serif;
+    font-family: "Inter", sans-serif;
     font-size: 14px;
     font-weight: 500;
     cursor: pointer;
     width: 100%;
     transition: color 0.15s;
   }
-  .drawer-logout:hover { color: #e2705f; }
+  .drawer-logout:hover {
+    color: #e2705f;
+  }
 
   /* Ajustar contenido para no quedar tapado por la barra */
   .main-content {
@@ -397,7 +461,7 @@
   }
 
   .bottom-nav-label {
-    font-family: 'Inter', sans-serif;
+    font-family: "Inter", sans-serif;
     font-size: 10px;
     font-weight: 500;
     line-height: 1;
