@@ -151,6 +151,15 @@ export default function Operar() {
     setSearchParams({ modo: newTab }, { replace: true })
   }
 
+  function handleSwapCurrencies() {
+    const previousFrom = from
+
+    setFrom(to)
+    setTo(previousFrom)
+    setAmount('')
+    setError('')
+  }
+
   async function handleSubmit() {
     if (!canSubmit) return
     setSubmitting(true)
@@ -252,119 +261,343 @@ export default function Operar() {
   // --- Formulario ---
   return (
     <div className="operar-layout">
-      {/* El encabezado va sobre las dos columnas, así el gráfico
-          arranca a la misma altura que las pestañas. */}
+      {/* Encabezado */}
       <div className="operar-head">
-        <h2 style={{ fontFamily: 'Poppins, sans-serif', fontWeight: 700, fontSize: 24, color: C.text, margin: 0 }}>Operar</h2>
-        <p style={{ fontFamily: 'Inter, sans-serif', fontSize: 14, color: C.muted, marginTop: 4 }}>Comprá, vendé e intercambiá divisas</p>
+        <h2
+          style={{
+            fontFamily: 'Poppins, sans-serif',
+            fontWeight: 700,
+            fontSize: 24,
+            color: C.text,
+            margin: 0,
+          }}
+        >
+          Operar
+        </h2>
+
+        <p
+          style={{
+            fontFamily: 'Inter, sans-serif',
+            fontSize: 14,
+            color: C.muted,
+            marginTop: 4,
+          }}
+        >
+          Comprá, vendé e intercambiá divisas
+        </p>
       </div>
 
+      {/* Columna del formulario */}
       <div className="operar-form-col">
-      {/* Tabs */}
-      <div style={{ position: 'relative', display: 'flex', padding: 4, background: C.card, borderRadius: 14, border: `1px solid ${C.cardBorder}` }}>
-        <div style={{
-          position: 'absolute', top: 4, bottom: 4, borderRadius: 10,
-          width: `calc(${100 / 3}% - 2px)`,
-          background: `linear-gradient(135deg, ${C.gold}, ${C.goldMid})`,
-          transition: 'transform 0.2s',
-          transform: `translateX(${TABS.findIndex(t => t.id === tab) * 100}%)`,
-        }} />
-        {TABS.map(t => (
-          <button key={t.id} onClick={() => handleTabChange(t.id)} style={{
-            flex: 1, padding: '10px 0', position: 'relative', zIndex: 1,
-            background: 'transparent', border: 'none', borderRadius: 10,
-            fontFamily: 'Poppins, sans-serif', fontWeight: 600, fontSize: 14,
-            color: tab === t.id ? '#161311' : C.muted, cursor: 'pointer', transition: 'color 0.2s',
-          }}>
-            {t.label}
-          </button>
-        ))}
-      </div>
-
-      {/* Form */}
-      <div style={{ display: 'flex', flexDirection: 'column', gap: 20, background: C.card, border: `1px solid ${C.cardBorder}`, borderRadius: C.radius, padding: 24 }}>
-        <div>
-          <label htmlFor="op-from" style={labelStyle}>
-            {tab === 'comprar' ? 'Comprás con' : tab === 'vender' ? 'Moneda a vender' : 'Origen'}
-          </label>
-          <select id="op-from" value={from} onChange={e => setFrom(e.target.value)} style={fieldStyle}>
-            {CURRENCIES.filter(c => c !== to).map(c => <option key={c}>{c}</option>)}
-          </select>
-          <div style={{ ...microStyle, marginTop: 6 }}>
-            Disponible: {formatAmount(from, available)} {from}
-          </div>
-        </div>
-
-        <div>
-          <label htmlFor="op-to" style={labelStyle}>{tab === 'comprar' ? 'Recibís en' : 'Destino'}</label>
-          <select id="op-to" value={to} onChange={e => setTo(e.target.value)} style={fieldStyle}>
-            {CURRENCIES.filter(c => c !== from).map(c => <option key={c}>{c}</option>)}
-          </select>
-        </div>
-
-        <div>
-          <label htmlFor="op-amount" style={labelStyle}>Monto</label>
-          <input
-            id="op-amount"
-            type="number"
-            min="0"
-            step="any"
-            placeholder={`0.00 ${from}`}
-            value={amount}
-            onChange={e => setAmount(e.target.value)}
+        {/* Tabs */}
+        <div
+          style={{
+            position: 'relative',
+            display: 'flex',
+            padding: 4,
+            background: C.card,
+            borderRadius: 14,
+            border: `1px solid ${C.cardBorder}`,
+          }}
+        >
+          <div
             style={{
-              ...fieldStyle,
-              borderColor: insufficient ? C.danger : C.cardBorder,
+              position: 'absolute',
+              top: 4,
+              bottom: 4,
+              borderRadius: 10,
+              width: `calc(${100 / 3}% - 2px)`,
+              background: `linear-gradient(135deg, ${C.gold}, ${C.goldMid})`,
+              transition: 'transform 0.2s',
+              transform: `translateX(${TABS.findIndex((t) => t.id === tab) * 100
+                }%)`,
             }}
           />
-          {insufficient && (
-            <div style={{ fontFamily: 'Inter, sans-serif', fontSize: 12, color: C.danger, marginTop: 6 }}>
-              No te alcanza el saldo en {from}
-            </div>
-          )}
+
+          {TABS.map((t) => (
+            <button
+              key={t.id}
+              onClick={() => handleTabChange(t.id)}
+              style={{
+                flex: 1,
+                padding: '10px 0',
+                position: 'relative',
+                zIndex: 1,
+                background: 'transparent',
+                border: 'none',
+                borderRadius: 10,
+                fontFamily: 'Poppins, sans-serif',
+                fontWeight: 600,
+                fontSize: 14,
+                color: tab === t.id ? '#161311' : C.muted,
+                cursor: 'pointer',
+                transition: 'color 0.2s',
+              }}
+            >
+              {t.label}
+            </button>
+          ))}
         </div>
 
-        {hasAmount && (
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '12px 16px', background: '#0f0d0b', border: '1px solid rgba(242,212,136,0.2)', borderRadius: 12 }}>
-            <div>
-              <div style={{ ...microStyle, marginBottom: 2 }}>Tasa</div>
-              <div style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: 12, color: C.goldMid }}>
-                {rateError ? 'no disponible' : rate === null ? '…' : `1 ${to} = ${(1 / rate).toFixed(4)} ${from}`}
-              </div>
-            </div>
-            <div style={{ textAlign: 'right' }}>
-              <div style={{ ...microStyle, marginBottom: 2 }}>Recibís</div>
-              <div style={{ fontFamily: 'JetBrains Mono, monospace', fontWeight: 700, fontSize: 20, color: C.gold }}>
-                {preview ? `${preview} ${to}` : '—'}
-              </div>
-            </div>
-          </div>
-        )}
-
-        {error && (
-          <div role="alert" style={{ padding: '12px 14px', borderRadius: 10, background: 'rgba(226,112,95,0.1)', border: `1px solid ${C.danger}`, color: C.danger, fontFamily: 'Inter, sans-serif', fontSize: 13 }}>
-            {error}
-          </div>
-        )}
-
-        <button
-          onClick={handleSubmit}
-          disabled={!canSubmit}
+        {/* Form */}
+        <div
           style={{
-            padding: '14px 0', borderRadius: 12, border: 'none',
-            background: !canSubmit ? 'rgba(242,212,136,0.2)' : `linear-gradient(135deg, ${C.gold}, ${C.goldMid})`,
-            color: !canSubmit ? C.mutedDark : '#161311',
-            fontFamily: 'Poppins, sans-serif', fontWeight: 700, fontSize: 15,
-            cursor: !canSubmit ? 'not-allowed' : 'pointer', transition: 'opacity 0.2s',
-          }}>
-          {submitting ? 'Procesando…' : 'Confirmar operación'}
-        </button>
+            display: 'flex',
+            flexDirection: 'column',
+            gap: 20,
+            background: C.card,
+            border: `1px solid ${C.cardBorder}`,
+            borderRadius: C.radius,
+            padding: 24,
+          }}
+        >
+          {/* Moneda origen */}
+          <div>
+            <label htmlFor="op-from" style={labelStyle}>
+              {tab === 'comprar'
+                ? 'Comprás con'
+                : tab === 'vender'
+                  ? 'Moneda a vender'
+                  : 'Origen'}
+            </label>
+
+            <select
+              id="op-from"
+              value={from}
+              onChange={(e) => setFrom(e.target.value)}
+              style={fieldStyle}
+            >
+              {CURRENCIES.filter((c) => c !== to).map((c) => (
+                <option key={c}>{c}</option>
+              ))}
+            </select>
+
+            <div
+              style={{
+                ...microStyle,
+                marginTop: 6,
+              }}
+            >
+              Disponible: {formatAmount(from, available)} {from}
+            </div>
+          </div>
+
+          {/* Invertir monedas */}
+          <div
+            style={{
+              display: 'flex',
+              justifyContent: 'center',
+            }}
+          >
+            <button
+              type="button"
+              onClick={handleSwapCurrencies}
+              aria-label="Invertir monedas"
+              title="Invertir monedas"
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: 8,
+                padding: '8px 14px',
+                borderRadius: 10,
+                border: `1px solid ${C.cardBorder}`,
+                background: '#0f0d0b',
+                color: C.gold,
+                fontFamily: 'Inter, sans-serif',
+                fontSize: 12,
+                fontWeight: 600,
+                cursor: 'pointer',
+              }}
+            >
+              <svg
+                width="16"
+                height="16"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="1.8"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              >
+                <path d="M7 7h11l-3-3" />
+                <path d="M17 17H6l3 3" />
+              </svg>
+
+              Invertir monedas
+            </button>
+          </div>
+
+          {/* Moneda destino */}
+          <div>
+            <label htmlFor="op-to" style={labelStyle}>
+              {tab === 'comprar' ? 'Recibís en' : 'Destino'}
+            </label>
+
+            <select
+              id="op-to"
+              value={to}
+              onChange={(e) => setTo(e.target.value)}
+              style={fieldStyle}
+            >
+              {CURRENCIES.filter((c) => c !== from).map((c) => (
+                <option key={c}>{c}</option>
+              ))}
+            </select>
+          </div>
+
+          {/* Monto */}
+          <div>
+            <label htmlFor="op-amount" style={labelStyle}>
+              Monto
+            </label>
+
+            <input
+              id="op-amount"
+              type="number"
+              min="0"
+              step="any"
+              placeholder={`0.00 ${from}`}
+              value={amount}
+              onChange={(e) => setAmount(e.target.value)}
+              style={{
+                ...fieldStyle,
+                borderColor: insufficient
+                  ? C.danger
+                  : C.cardBorder,
+              }}
+            />
+
+            {insufficient && (
+              <div
+                style={{
+                  fontFamily: 'Inter, sans-serif',
+                  fontSize: 12,
+                  color: C.danger,
+                  marginTop: 6,
+                }}
+              >
+                No te alcanza el saldo en {from}
+              </div>
+            )}
+          </div>
+
+          {/* Preview de tasa */}
+          {hasAmount && (
+            <div
+              style={{
+                display: 'flex',
+                justifyContent: 'space-between',
+                alignItems: 'center',
+                padding: '12px 16px',
+                background: '#0f0d0b',
+                border: '1px solid rgba(242,212,136,0.2)',
+                borderRadius: 12,
+              }}
+            >
+              <div>
+                <div
+                  style={{
+                    ...microStyle,
+                    marginBottom: 2,
+                  }}
+                >
+                  Tasa
+                </div>
+
+                <div
+                  style={{
+                    fontFamily: 'JetBrains Mono, monospace',
+                    fontSize: 12,
+                    color: C.goldMid,
+                  }}
+                >
+                  {rateError
+                    ? 'no disponible'
+                    : rate === null
+                      ? '…'
+                      : `1 ${to} = ${(1 / rate).toFixed(4)} ${from}`}
+                </div>
+              </div>
+
+              <div style={{ textAlign: 'right' }}>
+                <div
+                  style={{
+                    ...microStyle,
+                    marginBottom: 2,
+                  }}
+                >
+                  Recibís
+                </div>
+
+                <div
+                  style={{
+                    fontFamily: 'JetBrains Mono, monospace',
+                    fontWeight: 700,
+                    fontSize: 20,
+                    color: C.gold,
+                  }}
+                >
+                  {preview ? `${preview} ${to}` : '—'}
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* Error */}
+          {error && (
+            <div
+              role="alert"
+              style={{
+                padding: '12px 14px',
+                borderRadius: 10,
+                background: 'rgba(226,112,95,0.1)',
+                border: `1px solid ${C.danger}`,
+                color: C.danger,
+                fontFamily: 'Inter, sans-serif',
+                fontSize: 13,
+              }}
+            >
+              {error}
+            </div>
+          )}
+
+          {/* Confirmar */}
+          <button
+            onClick={handleSubmit}
+            disabled={!canSubmit}
+            style={{
+              padding: '14px 0',
+              borderRadius: 12,
+              border: 'none',
+              background: !canSubmit
+                ? 'rgba(242,212,136,0.2)'
+                : `linear-gradient(135deg, ${C.gold}, ${C.goldMid})`,
+              color: !canSubmit
+                ? C.mutedDark
+                : '#161311',
+              fontFamily: 'Poppins, sans-serif',
+              fontWeight: 700,
+              fontSize: 15,
+              cursor: !canSubmit
+                ? 'not-allowed'
+                : 'pointer',
+              transition: 'opacity 0.2s',
+            }}
+          >
+            {submitting
+              ? 'Procesando…'
+              : 'Confirmar operación'}
+          </button>
         </div>
       </div>
 
-      {/* Sigue al par elegido a la izquierda, sea cual sea la pestaña */}
+      {/* Gráfico */}
       <div className="operar-chart-col">
-        <RateChart from={from} to={to} days={7} />
+        <RateChart
+          from={from}
+          to={to}
+          days={7}
+        />
       </div>
     </div>
   )
