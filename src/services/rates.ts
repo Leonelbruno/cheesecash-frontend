@@ -19,6 +19,28 @@ export async function getRate(from: string, to: string): Promise<number> {
   return res.rate
 }
 
+/** Un punto de la serie histórica. */
+export interface RatePoint {
+  date: string
+  rate: number
+}
+
+/**
+ * Serie histórica de un par. GET /rates/history
+ * days va de 1 a 90; el backend descarta las fechas sin dato en alguna
+ * de las dos fuentes, así que los fines de semana no aparecen.
+ */
+export async function getRateHistory(
+  from: string,
+  to: string,
+  days = 7,
+): Promise<RatePoint[]> {
+  const res = await api.get<{ points: RatePoint[] }>(
+    `/rates/history?from=${from}&to=${to}&days=${days}`,
+  )
+  return Array.isArray(res.points) ? res.points : []
+}
+
 /** Tabla completa de cotizaciones contra USD. GET /rates */
 export async function getAllRates(): Promise<Record<string, number>> {
   return api.get<Record<string, number>>('/rates')

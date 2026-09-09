@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import RateChart from '../../components/RateChart/RateChart'
 import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../../context/useAuth'
 import { api } from '../../services/api'
@@ -174,6 +175,14 @@ function Dashboard() {
                 ? `$ ${formatAmount('USD', usdBalance.amount)}`
                 : '$ 0,00'}
           </h2>
+        </section>
+
+        <section className="dashboard-section">
+          <h2 className="dashboard-section-title">
+            Cotizaciones
+          </h2>
+
+          <RateChart from="USD" to="ARS" days={7} selectable />
         </section>
 
         <section className="dashboard-section">

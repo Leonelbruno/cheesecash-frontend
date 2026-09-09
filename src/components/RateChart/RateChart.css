@@ -1,0 +1,161 @@
+.rate-chart {
+  background: #141210;
+  border: 1px solid rgba(232, 196, 104, 0.14);
+  border-radius: 18px;
+  padding: 20px 22px 16px;
+}
+
+.rate-chart-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 14px;
+  margin-bottom: 14px;
+}
+
+.rate-chart-title {
+  margin: 0 0 6px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 3px;
+  color: #9a927f;
+}
+
+.rate-chart-value {
+  margin: 0;
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.rate-chart-figure {
+  font-family: 'JetBrains Mono', monospace;
+  font-weight: 700;
+  font-size: 26px;
+  letter-spacing: -0.02em;
+  color: #f6efdf;
+  transition: color 0.3s;
+}
+
+.rate-chart-figure.is-live {
+  color: #f2d488;
+}
+
+.rate-chart-date {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px;
+  color: #645d51;
+}
+
+.rate-chart-delta {
+  flex: none;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 12px;
+  font-weight: 500;
+  padding: 4px 9px;
+  border-radius: 7px;
+}
+
+.rate-chart-delta.is-up {
+  color: #7fc79a;
+  background: rgba(127, 199, 154, 0.1);
+}
+
+.rate-chart-delta.is-down {
+  color: #e2705f;
+  background: rgba(226, 112, 95, 0.1);
+}
+
+.rate-chart-controls {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 14px;
+  flex-wrap: wrap;
+}
+
+.rate-chart-picker {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.rate-chart-picker button {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px;
+  letter-spacing: 1px;
+  padding: 5px 12px;
+  border-radius: 7px;
+  border: 1px solid rgba(232, 196, 104, 0.14);
+  background: transparent;
+  color: #9a927f;
+  cursor: pointer;
+  transition: 0.18s;
+}
+
+.rate-chart-picker button:hover {
+  color: #f6efdf;
+}
+
+.rate-chart-picker button.is-active {
+  background: rgba(242, 212, 136, 0.12);
+  border-color: #f2d488;
+  color: #f2d488;
+  font-weight: 700;
+}
+
+.rate-chart-picker button:focus-visible {
+  outline: 2px solid #f2d488;
+  outline-offset: 2px;
+}
+
+.rate-chart-svg {
+  display: block;
+  width: 100%;
+  height: 180px;
+  overflow: visible;
+}
+
+.rate-chart-line {
+  fill: none;
+  stroke: #f2d488;
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.rate-chart-dot {
+  fill: #f2d488;
+  stroke: #141210;
+  stroke-width: 2;
+}
+
+.rate-chart-guide {
+  stroke: rgba(232, 196, 104, 0.28);
+  stroke-width: 1;
+  stroke-dasharray: 3 3;
+}
+
+.rate-chart-axis {
+  display: flex;
+  justify-content: space-between;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10px;
+  color: #645d51;
+  margin-top: 2px;
+}
+
+.rate-chart-msg {
+  margin: 26px 0;
+  text-align: center;
+  font-family: 'Inter', sans-serif;
+  font-size: 14px;
+  color: #9a927f;
+}
+
+.rate-chart-msg.is-error {
+  color: #e2705f;
+}
