@@ -14,6 +14,8 @@ import ChatBot from './components/ChatBot/ChatBot'
 import Landing from './pages/Landing/Landing'
 import ConfirmTransaction from './pages/ConfirmTransaction/ConfirmTransaction'
 import ConfirmTransfer from './pages/ConfirmTransfer/ConfirmTransfer'
+import ForgotPassword from './pages/ForgotPassword/ForgotPassword'
+import ResetPassword from './pages/ResetPassword/ResetPassword'
 
 function App() {
   return (
@@ -27,6 +29,8 @@ function App() {
         <Route element={<PublicRoute />}>
           <Route path="/login" element={<AuthPage />} />
           <Route path="/register" element={<AuthPage />} />
+          <Route path="/forgot-password" element={<ForgotPassword />} />
+          <Route path="/reset-password" element={<ResetPassword />} />
         </Route>
 
         {/* Rutas protegidas */}

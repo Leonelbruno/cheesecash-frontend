@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
-import { useLocation, useNavigate } from 'react-router-dom'
+import { Link, useLocation, useNavigate } from 'react-router-dom'
 import { useAuth } from '../../context/useAuth'
 import Toast from '../../components/Toast/Toast'
 import CheeseCashLogo from '../../components/CheeseCashLogo/CheeseCashLogo'
@@ -305,6 +305,12 @@ export default function AuthPage() {
                     </small>
                   )}
                 </div>
+              )}
+
+              {!isRegister && (
+                <Link className="forgot-link" to="/forgot-password">
+                  ¿Olvidaste tu contraseña?
+                </Link>
               )}
 
               {error && <p className="auth-error" role="alert">{error}</p>}
