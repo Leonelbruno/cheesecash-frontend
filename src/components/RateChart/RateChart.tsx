@@ -143,9 +143,18 @@ export default function RateChart({
   }, [tick])
 
   const rates = points.map(p => p.rate)
-  const min = Math.min(...rates)
-  const max = Math.max(...rates)
-  const span = max - min || max * 0.01 || 1
+  const rawMin = Math.min(...rates)
+  const rawMax = Math.max(...rates)
+  const mid = (rawMin + rawMax) / 2
+
+  // Sin esto, una variación del 0,3% ocuparía todo el alto y la curva
+  // parecería un precipicio. Le damos al eje un ancho mínimo del 4% del
+  // valor, así lo plano se ve plano y lo movido se ve movido.
+  const MIN_SPAN_RATIO = 0.04
+  const naturalSpan = rawMax - rawMin
+  const minSpan = Math.abs(mid) * MIN_SPAN_RATIO
+  const span = Math.max(naturalSpan * 1.4, minSpan) || 1
+  const min = mid - span / 2
 
   const innerW = W - PAD.left - PAD.right
   const innerH = H - PAD.top - PAD.bottom
@@ -278,6 +287,7 @@ export default function RateChart({
       {!loading && !error && points.length > 1 && (
         <div className="rate-chart-axis">
           <span>{formatDay(points[0].date)}</span>
+          <span>{activeDays} días</span>
           <span>{formatDay(points[points.length - 1].date)}</span>
         </div>
       )}
