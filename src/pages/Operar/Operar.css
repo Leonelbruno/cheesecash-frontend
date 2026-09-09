@@ -1,10 +1,25 @@
 /* En escritorio el formulario y el gráfico van lado a lado.
    En pantallas chicas se apilan, con el gráfico debajo. */
+
+/* El Layout limita su contenido a 720px, que alcanza para una columna
+   pero deja al gráfico demasiado angosto. Acá ensanchamos solo esta
+   pantalla, sin tocar el resto de la app. */
+.main-content > .operar-layout {
+  max-width: 1040px;
+}
+
 .operar-layout {
   display: grid;
-  grid-template-columns: minmax(0, 420px) minmax(320px, 1fr);
-  gap: 28px;
+  grid-template-columns: minmax(0, 420px) minmax(320px, 560px);
+  grid-template-rows: auto 1fr;
+  gap: 20px 28px;
   align-items: start;
+}
+
+/* Ocupa las dos columnas: el título queda arriba de todo y las dos
+   columnas de abajo arrancan alineadas. */
+.operar-head {
+  grid-column: 1 / -1;
 }
 
 .operar-form-col {
@@ -28,5 +43,9 @@
 
   .operar-chart-col {
     position: static;
+  }
+
+  .operar-head {
+    grid-column: auto;
   }
 }
