@@ -368,7 +368,8 @@
   }
   /* ocultamos el contenido de texto del panel izquierdo */
   .brand-top,
-  .hero { display: none; }
+  .hero,
+  .brand-foot { display: none; }
 
   /* form encima del fondo, con backdrop para legibilidad */
   .form-panel {
