@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useState } from 'react'
+import RateChart from '../../components/RateChart/RateChart'
 import { useNavigate, useSearchParams } from 'react-router-dom'
 import { api } from '../../services/api'
 import {
@@ -355,6 +356,14 @@ export default function Operar() {
           {submitting ? 'Procesando…' : 'Confirmar operación'}
         </button>
       </div>
+
+      {/* Sigue al par elegido arriba, sea cual sea la pestaña */}
+      <RateChart
+        from={from}
+        to={to}
+        days={7}
+        title={`1 ${from} en ${to} · últimos 7 días`}
+      />
     </div>
   )
 }
