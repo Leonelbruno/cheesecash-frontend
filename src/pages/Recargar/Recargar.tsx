@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { api } from '../../services/api'
 
 const C = {
@@ -17,11 +17,31 @@ const CURRENCY_LABELS: Record<string, string> = {
   BTC: 'Bitcoin',
 }
 
+/** Topes por operación. Tienen que coincidir con MAX_DEPOSIT del backend. */
+const MAX_AMOUNT: Record<string, number> = {
+  ARS: 5_000_000,
+  USD: 5_000,
+  EUR: 5_000,
+  BTC: 0.1,
+}
+
 const QUICK_AMOUNTS: Record<string, number[]> = {
   ARS: [10000, 50000, 100000, 500000],
   USD: [10, 50, 100, 500],
   EUR: [10, 50, 100, 500],
-  BTC: [0.001, 0.01, 0.1, 1],
+  BTC: [0.001, 0.005, 0.01, 0.05],
+}
+
+interface ApiDeposit {
+  id: number
+  currency: string
+  amount: number
+  created_at: string
+}
+
+function formatDate(iso: string): string {
+  const d = new Date(iso)
+  return d.toLocaleDateString('es-AR', { day: '2-digit', month: '2-digit' })
 }
 
 function formatQuick(amount: number, currency: string): string {
@@ -35,9 +55,30 @@ export default function Recargar() {
   const [loading, setLoading]   = useState(false)
   const [success, setSuccess]   = useState(false)
   const [error, setError]       = useState('')
+  const [deposits, setDeposits] = useState<ApiDeposit[]>([])
 
   const parsed = parseFloat(amount.replace(',', '.'))
-  const valid  = !isNaN(parsed) && parsed > 0
+  const max = MAX_AMOUNT[currency]
+  const overMax = !isNaN(parsed) && parsed > max
+  const valid  = !isNaN(parsed) && parsed > 0 && !overMax
+
+  function loadDeposits() {
+    api
+      .get<ApiDeposit[]>('/deposits')
+      .then(data => setDeposits(Array.isArray(data) ? data.slice(0, 5) : []))
+      .catch(() => setDeposits([]))
+  }
+
+  useEffect(() => {
+    let cancelled = false
+
+    api
+      .get<ApiDeposit[]>('/deposits')
+      .then(data => { if (!cancelled) setDeposits(Array.isArray(data) ? data.slice(0, 5) : []) })
+      .catch(() => { if (!cancelled) setDeposits([]) })
+
+    return () => { cancelled = true }
+  }, [])
 
   async function handleSubmit() {
     if (!valid) return
@@ -49,6 +90,7 @@ export default function Recargar() {
       await api.post('/deposits', { currency, amount: parsed })
       setSuccess(true)
       setAmount('')
+      loadDeposits()
     } catch (e: unknown) {
       const msg = (e as { message?: string })?.message
       setError(msg ?? 'No se pudo procesar la recarga. Intentá de nuevo.')
@@ -103,9 +145,9 @@ export default function Recargar() {
 
       {/* Monto */}
       <div style={{ background: C.card, border: `1px solid ${C.cardBorder}`, borderRadius: 16, padding: '20px 24px', display: 'flex', flexDirection: 'column', gap: 14 }}>
-        <div style={{ fontFamily: 'Inter, sans-serif', fontSize: 12, fontWeight: 600, color: C.muted, textTransform: 'uppercase', letterSpacing: '0.08em' }}>
+        <label htmlFor="recarga-monto" style={{ fontFamily: 'Inter, sans-serif', fontSize: 12, fontWeight: 600, color: C.muted, textTransform: 'uppercase', letterSpacing: '0.08em' }}>
           Monto
-        </div>
+        </label>
 
         {/* Montos rápidos */}
         <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
@@ -124,14 +166,22 @@ export default function Recargar() {
         </div>
 
         <input
+          id="recarga-monto"
           type="number"
           min="0"
           step={currency === 'BTC' ? '0.00001' : '1'}
           placeholder={`Ingresá el monto en ${currency}`}
           value={amount}
           onChange={e => setAmount(e.target.value)}
-          style={inputStyle}
+          style={{ ...inputStyle, borderColor: overMax ? C.error : C.cardBorder }}
+          aria-invalid={overMax}
         />
+
+        {overMax && (
+          <div style={{ fontFamily: 'Inter, sans-serif', fontSize: 12.5, color: C.error }}>
+            El máximo por recarga es {formatQuick(max, currency)} {currency}
+          </div>
+        )}
       </div>
 
       {/* Resumen */}
@@ -183,6 +233,34 @@ export default function Recargar() {
       >
         {loading ? 'Procesando...' : 'Confirmar recarga'}
       </button>
+
+      {/* Últimas recargas */}
+      {deposits.length > 0 && (
+        <div style={{ background: C.card, border: `1px solid ${C.cardBorder}`, borderRadius: 16, padding: '20px 24px', display: 'flex', flexDirection: 'column', gap: 12 }}>
+          <div style={{ fontFamily: 'Inter, sans-serif', fontSize: 12, fontWeight: 600, color: C.muted, textTransform: 'uppercase', letterSpacing: '0.08em' }}>
+            Últimas recargas
+          </div>
+
+          <ul style={{ listStyle: 'none', margin: 0, padding: 0, display: 'flex', flexDirection: 'column' }}>
+            {deposits.map((d, i) => (
+              <li
+                key={d.id}
+                style={{
+                  display: 'flex', justifyContent: 'space-between', alignItems: 'center',
+                  gap: 12, padding: '11px 0',
+                  borderTop: i === 0 ? 'none' : `1px solid rgba(232,196,104,0.07)`,
+                }}>
+                <span style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: 11.5, color: C.mutedDark }}>
+                  {formatDate(d.created_at)}
+                </span>
+                <span style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: 14, fontWeight: 700, color: C.green }}>
+                  + {formatQuick(Number(d.amount), d.currency)} {d.currency}
+                </span>
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
     </div>
   )
 }
