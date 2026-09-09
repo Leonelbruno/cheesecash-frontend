@@ -21,6 +21,16 @@ function renderT() {
   return render(<MemoryRouter><Transferir /></MemoryRouter>)
 }
 
+/** Botón del formulario: abre el resumen, no envía. */
+function botonRevisar() {
+  return screen.getByRole('button', { name: /revisar transferencia/i })
+}
+
+/** Botón del resumen: este sí dispara el POST. */
+function botonConfirmar() {
+  return screen.getByRole('button', { name: /confirmar envío/i })
+}
+
 describe('Transferir', () => {
   beforeEach(() => {
     vi.clearAllMocks()
@@ -51,7 +61,7 @@ describe('Transferir', () => {
     await userEvent.type(screen.getByLabelText(/email del destinatario/i), 'no-es-un-email')
     await userEvent.type(screen.getByLabelText('Monto'), '1000')
 
-    expect(screen.getByRole('button', { name: /enviar transferencia/i })).toBeDisabled()
+    expect(botonRevisar()).toBeDisabled()
     expect(mockPost).not.toHaveBeenCalled()
   })
 
@@ -67,7 +77,8 @@ describe('Transferir', () => {
 
     await userEvent.type(screen.getByLabelText(/email del destinatario/i), 'jere@test.com')
     await userEvent.type(screen.getByLabelText('Monto'), '1000')
-    await userEvent.click(screen.getByRole('button', { name: /enviar transferencia/i }))
+    await userEvent.click(botonRevisar())
+    await userEvent.click(botonConfirmar())
 
     expect(mockPost).toHaveBeenCalledWith('/transfers', {
       toEmail: 'jere@test.com',
@@ -85,7 +96,7 @@ describe('Transferir', () => {
     await userEvent.type(screen.getByLabelText('Monto'), '999999')
 
     expect(screen.getByText(/no te alcanza el saldo/i)).toBeInTheDocument()
-    expect(screen.getByRole('button', { name: /enviar transferencia/i })).toBeDisabled()
+    expect(botonRevisar()).toBeDisabled()
   })
 
   it('muestra el error del backend cuando el destinatario no existe', async () => {
@@ -96,7 +107,8 @@ describe('Transferir', () => {
 
     await userEvent.type(screen.getByLabelText(/email del destinatario/i), 'nadie@test.com')
     await userEvent.type(screen.getByLabelText('Monto'), '500')
-    await userEvent.click(screen.getByRole('button', { name: /enviar transferencia/i }))
+    await userEvent.click(botonRevisar())
+    await userEvent.click(botonConfirmar())
 
     expect(await screen.findByRole('alert')).toHaveTextContent('El destinatario no existe')
   })
@@ -113,7 +125,8 @@ describe('Transferir', () => {
 
     await userEvent.type(screen.getByLabelText(/email del destinatario/i), 'jere@test.com')
     await userEvent.type(screen.getByLabelText('Monto'), '40000')
-    await userEvent.click(screen.getByRole('button', { name: /enviar transferencia/i }))
+    await userEvent.click(botonRevisar())
+    await userEvent.click(botonConfirmar())
 
     expect(await screen.findByText(/confirmá por email/i)).toBeInTheDocument()
     expect(screen.getByText(/tu saldo todavía no se modificó/i)).toBeInTheDocument()
@@ -140,7 +153,8 @@ describe('Transferir', () => {
     await userEvent.click(screen.getByRole('button', { name: 'PIN' }))
     await userEvent.type(screen.getByLabelText(/pin del destinatario/i), 'z9y8x7')
     await userEvent.type(screen.getByLabelText('Monto'), '2000')
-    await userEvent.click(screen.getByRole('button', { name: /enviar transferencia/i }))
+    await userEvent.click(botonRevisar())
+    await userEvent.click(botonConfirmar())
 
     expect(mockPost).toHaveBeenCalledWith('/transfers', {
       toPin: 'Z9Y8X7',
@@ -157,7 +171,7 @@ describe('Transferir', () => {
     await userEvent.type(screen.getByLabelText(/pin del destinatario/i), 'A1B')
     await userEvent.type(screen.getByLabelText('Monto'), '1000')
 
-    expect(screen.getByRole('button', { name: /enviar transferencia/i })).toBeDisabled()
+    expect(botonRevisar()).toBeDisabled()
     expect(mockPost).not.toHaveBeenCalled()
   })
 
@@ -194,5 +208,56 @@ describe('Transferir', () => {
     await screen.findByText(/disponible/i)
 
     expect(screen.getByRole('button', { name: /transferir todo/i })).toBeDisabled()
+  })
+
+  it('el resumen muestra el destinatario, el monto y lo que queda', async () => {
+    renderT()
+    await screen.findByText(/disponible/i)
+
+    await userEvent.type(screen.getByLabelText(/email del destinatario/i), 'jere@test.com')
+    await userEvent.type(screen.getByLabelText('Monto'), '20000')
+    await userEvent.click(botonRevisar())
+
+    expect(screen.getByText(/revisá antes de enviar/i)).toBeInTheDocument()
+    expect(screen.getByText('jere@test.com')).toBeInTheDocument()
+    expect(screen.getByText(/20\.000,00 ARS/)).toBeInTheDocument()
+    // 50.000 de saldo menos 20.000 enviados
+    expect(screen.getByText(/30\.000,00 ARS/)).toBeInTheDocument()
+  })
+
+  it('el resumen no envía nada hasta que se confirma', async () => {
+    renderT()
+    await screen.findByText(/disponible/i)
+
+    await userEvent.type(screen.getByLabelText(/email del destinatario/i), 'jere@test.com')
+    await userEvent.type(screen.getByLabelText('Monto'), '1000')
+    await userEvent.click(botonRevisar())
+
+    expect(mockPost).not.toHaveBeenCalled()
+  })
+
+  it('desde el resumen se puede volver al formulario sin enviar', async () => {
+    renderT()
+    await screen.findByText(/disponible/i)
+
+    await userEvent.type(screen.getByLabelText(/email del destinatario/i), 'jere@test.com')
+    await userEvent.type(screen.getByLabelText('Monto'), '1000')
+    await userEvent.click(botonRevisar())
+    await userEvent.click(screen.getByRole('button', { name: /volver/i }))
+
+    expect(screen.getByLabelText('Monto')).toHaveValue(1000)
+    expect(mockPost).not.toHaveBeenCalled()
+  })
+
+  it('en modo PIN el resumen muestra el PIN del destinatario', async () => {
+    renderT()
+    await screen.findByText(/disponible/i)
+
+    await userEvent.click(screen.getByRole('button', { name: 'PIN' }))
+    await userEvent.type(screen.getByLabelText(/pin del destinatario/i), 'z9y8x7')
+    await userEvent.type(screen.getByLabelText('Monto'), '1000')
+    await userEvent.click(botonRevisar())
+
+    expect(screen.getByText('PIN Z9Y8X7')).toBeInTheDocument()
   })
 })
