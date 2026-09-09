@@ -1,0 +1,32 @@
+/* En escritorio el formulario y el gráfico van lado a lado.
+   En pantallas chicas se apilan, con el gráfico debajo. */
+.operar-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 460px) minmax(0, 1fr);
+  gap: 24px;
+  align-items: start;
+}
+
+.operar-form-col {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  min-width: 0;
+}
+
+.operar-chart-col {
+  min-width: 0;
+  position: sticky;
+  top: 24px;
+}
+
+@media (max-width: 1000px) {
+  .operar-layout {
+    grid-template-columns: minmax(0, 1fr);
+    max-width: 460px;
+  }
+
+  .operar-chart-col {
+    position: static;
+  }
+}
