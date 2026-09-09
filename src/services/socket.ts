@@ -37,6 +37,6 @@ export interface TransferEvent {
 export function connectSocket(token: string): Socket {
   return io(socketUrl(), {
     auth: { token },
-    transports: ['websocket', 'polling'],
+    transports: ['polling', 'websocket'],
   })
 }
