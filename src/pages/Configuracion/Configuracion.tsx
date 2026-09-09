@@ -1,13 +1,13 @@
 import { useEffect, useState } from 'react'
 import { api } from '../../services/api'
-
-const C = {
-  card: '#141210', cardBorder: 'rgba(232,196,104,0.14)',
-  gold: '#f2d488', goldMid: '#d9a942',
-  text: '#f6efdf', muted: '#9a927f', mutedDark: '#5c584c',
-  danger: '#e2705f',
-  radius: '18px',
-}
+import { useAuth } from '../../context/useAuth'
+import {
+  BASE_CURRENCIES,
+  getBaseCurrency,
+  setBaseCurrency,
+  type BaseCurrency,
+} from '../../services/preferences'
+import './Configuracion.css'
 
 /** Lo que devuelve GET /users/me/thresholds (columnas de la base). */
 interface ApiThresholds {
@@ -25,30 +25,60 @@ interface ThresholdForm {
   btcUsd: string
 }
 
-const FIELDS: { key: keyof ThresholdForm; label: string; hint: string }[] = [
-  { key: 'ars', label: 'Pesos argentinos', hint: 'ARS' },
+const THRESHOLD_FIELDS: {
+  key: keyof ThresholdForm
+  label: string
+  hint: string
+}[] = [
+  { key: 'ars', label: 'Pesos', hint: 'ARS' },
   { key: 'usd', label: 'Dólares', hint: 'USD' },
   { key: 'eur', label: 'Euros', hint: 'EUR' },
-  { key: 'btcUsd', label: 'Bitcoin', hint: 'equivalente en USD' },
+  { key: 'btcUsd', label: 'Bitcoin', hint: 'en USD' },
 ]
 
-const fieldStyle: React.CSSProperties = {
-  width: '100%', padding: '12px 14px', boxSizing: 'border-box',
-  background: '#0f0d0b', border: `1px solid ${C.cardBorder}`, borderRadius: 10,
-  color: C.text, fontFamily: 'JetBrains Mono, monospace', fontSize: 14, outline: 'none',
-}
-const labelStyle: React.CSSProperties = {
-  fontFamily: 'JetBrains Mono, monospace', fontSize: 10,
-  textTransform: 'uppercase', letterSpacing: 3, color: C.muted,
-  display: 'block', marginBottom: 6,
-}
-
 export default function Configuracion() {
-  const [form, setForm] = useState<ThresholdForm | null>(null)
-  const [loadError, setLoadError] = useState('')
-  const [saving, setSaving] = useState(false)
-  const [error, setError] = useState('')
-  const [saved, setSaved] = useState(false)
+  const { user, refreshUser } = useAuth()
+
+  // ── Datos de la cuenta ──
+  const [pin, setPin] = useState<string | null>(null)
+
+  // ── Nombre ──
+  // Guardamos solo lo que el usuario escribió. Mientras no toque nada,
+  // el campo muestra el nombre que viene del servidor. Así no hace falta
+  // un efecto que copie el valor y dispare renders en cascada.
+  const [nameDraft, setNameDraft] = useState<string | null>(null)
+  const name = nameDraft ?? user?.fullName ?? ''
+  const [savingName, setSavingName] = useState(false)
+  const [nameError, setNameError] = useState('')
+  const [nameSaved, setNameSaved] = useState(false)
+
+  // ── Contraseña ──
+  const [current, setCurrent] = useState('')
+  const [next, setNext] = useState('')
+  const [confirm, setConfirm] = useState('')
+  const [savingPass, setSavingPass] = useState(false)
+  const [passError, setPassError] = useState('')
+  const [passSaved, setPassSaved] = useState(false)
+
+  // ── Moneda base ──
+  const [base, setBase] = useState<BaseCurrency>(getBaseCurrency)
+
+  // ── Umbrales ──
+  const [thresholds, setThresholds] = useState<ThresholdForm | null>(null)
+  const [thError, setThError] = useState('')
+  const [savingTh, setSavingTh] = useState(false)
+  const [thSaved, setThSaved] = useState(false)
+
+  useEffect(() => {
+    let cancelled = false
+
+    api
+      .get<{ pin: string }>('/users/me/pin')
+      .then(data => { if (!cancelled) setPin(data.pin) })
+      .catch(() => { if (!cancelled) setPin(null) })
+
+    return () => { cancelled = true }
+  }, [])
 
   useEffect(() => {
     let cancelled = false
@@ -57,7 +87,7 @@ export default function Configuracion() {
       .get<ApiThresholds>('/users/me/thresholds')
       .then(data => {
         if (cancelled) return
-        setForm({
+        setThresholds({
           ars: String(data.threshold_ars ?? ''),
           usd: String(data.threshold_usd ?? ''),
           eur: String(data.threshold_eur ?? ''),
@@ -66,114 +96,288 @@ export default function Configuracion() {
       })
       .catch(err => {
         if (cancelled) return
-        setLoadError(err instanceof Error ? err.message : 'No pudimos cargar tus umbrales')
+        setThError(err instanceof Error ? err.message : 'No pudimos cargar tus umbrales')
       })
 
     return () => { cancelled = true }
   }, [])
 
-  function setField(key: keyof ThresholdForm, value: string) {
-    setForm(prev => (prev ? { ...prev, [key]: value } : prev))
-    setSaved(false)
-  }
+  // ── Guardar nombre ──
+  const nameChanged = name.trim() !== (user?.fullName ?? '') && name.trim().length >= 2
 
-  const values = form
-    ? FIELDS.map(f => parseFloat(form[f.key].replace(',', '.')))
-    : []
-  const allValid = values.length > 0 && values.every(v => !Number.isNaN(v) && v > 0)
-
-  async function handleSave() {
-    if (!form || !allValid || saving) return
-    setSaving(true)
-    setError('')
+  async function saveName() {
+    if (!nameChanged || savingName) return
+    setSavingName(true)
+    setNameError('')
 
     try {
-      await api.put('/users/me/thresholds', {
-        ars: parseFloat(form.ars.replace(',', '.')),
-        usd: parseFloat(form.usd.replace(',', '.')),
-        eur: parseFloat(form.eur.replace(',', '.')),
-        btcUsd: parseFloat(form.btcUsd.replace(',', '.')),
-      })
-      setSaved(true)
+      await api.put('/users/me', { fullName: name.trim() })
+      await refreshUser()
+      setNameDraft(null)
+      setNameSaved(true)
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'No pudimos guardar los cambios')
+      setNameError(err instanceof Error ? err.message : 'No pudimos guardar el nombre')
     } finally {
-      setSaving(false)
+      setSavingName(false)
     }
   }
 
+  // ── Guardar contraseña ──
+  const tooShort = next.length > 0 && next.length < 8
+  const mismatch = confirm.length > 0 && next !== confirm
+  const canSavePass =
+    current.length > 0 && next.length >= 8 && next === confirm && !savingPass
+
+  async function savePassword() {
+    if (!canSavePass) return
+    setSavingPass(true)
+    setPassError('')
+
+    try {
+      await api.put('/users/me/password', {
+        currentPassword: current,
+        newPassword: next,
+      })
+      setCurrent('')
+      setNext('')
+      setConfirm('')
+      setPassSaved(true)
+    } catch (err) {
+      setPassError(err instanceof Error ? err.message : 'No pudimos cambiar la contraseña')
+    } finally {
+      setSavingPass(false)
+    }
+  }
+
+  // ── Guardar umbrales ──
+  const thValues = thresholds
+    ? THRESHOLD_FIELDS.map(f => parseFloat(thresholds[f.key].replace(',', '.')))
+    : []
+  const thValid = thValues.length > 0 && thValues.every(v => !Number.isNaN(v) && v > 0)
+
+  async function saveThresholds() {
+    if (!thresholds || !thValid || savingTh) return
+    setSavingTh(true)
+    setThError('')
+
+    try {
+      await api.put('/users/me/thresholds', {
+        ars: parseFloat(thresholds.ars.replace(',', '.')),
+        usd: parseFloat(thresholds.usd.replace(',', '.')),
+        eur: parseFloat(thresholds.eur.replace(',', '.')),
+        btcUsd: parseFloat(thresholds.btcUsd.replace(',', '.')),
+      })
+      setThSaved(true)
+    } catch (err) {
+      setThError(err instanceof Error ? err.message : 'No pudimos guardar los cambios')
+    } finally {
+      setSavingTh(false)
+    }
+  }
+
+  const initial = (user?.fullName ?? '?').trim().charAt(0).toUpperCase()
+
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: 24, maxWidth: 460 }}>
-      <div>
-        <h2 style={{ fontFamily: 'Poppins, sans-serif', fontWeight: 700, fontSize: 24, color: C.text, margin: 0 }}>
-          Umbrales de confirmación
-        </h2>
-        <p style={{ fontFamily: 'Inter, sans-serif', fontSize: 14, color: C.muted, marginTop: 4, lineHeight: 1.5 }}>
+    <div className="config">
+      <div className="config-head">
+        <h2>Configuración de la cuenta</h2>
+        <p>Tus datos, tu seguridad y cómo querés que se comporte la app.</p>
+      </div>
+
+      {/* ── Cuenta ── */}
+      <section className="config-card">
+        <div className="config-identity">
+          <div className="config-avatar" aria-hidden="true">{initial}</div>
+          <div className="config-identity-text">
+            <b>{user?.fullName ?? '—'}</b>
+            {pin && <span>PIN {pin}</span>}
+          </div>
+        </div>
+
+        <dl className="config-facts">
+          <div className="config-fact">
+            <dt>Correo electrónico</dt>
+            <dd>{user?.email ?? '—'}</dd>
+          </div>
+          <div className="config-fact">
+            <dt>Tu PIN para recibir</dt>
+            <dd>{pin ?? '—'}</dd>
+          </div>
+          <div className="config-fact">
+            <dt>Tipo de cuenta</dt>
+            <dd>Usuario estándar</dd>
+          </div>
+          <div className="config-fact">
+            <dt>Estado</dt>
+            <dd className="is-ok">Activa</dd>
+          </div>
+        </dl>
+      </section>
+
+      {/* ── Nombre ── */}
+      <section className="config-card">
+        <h3>Nombre</h3>
+        <p className="config-hint">Es el nombre que ven quienes reciben tus transferencias.</p>
+
+        <div className="config-form">
+          <div className="config-field">
+            <label htmlFor="cfg-name">Nombre completo</label>
+            <input
+              id="cfg-name"
+              type="text"
+              value={name}
+              onChange={e => { setNameDraft(e.target.value); setNameSaved(false) }}
+              disabled={savingName}
+            />
+          </div>
+
+          {nameError && <p className="config-msg is-error" role="alert">{nameError}</p>}
+          {nameSaved && <p className="config-msg is-ok" role="status">Nombre actualizado</p>}
+
+          <button className="config-btn" onClick={saveName} disabled={!nameChanged || savingName}>
+            {savingName ? 'Guardando…' : 'Guardar nombre'}
+          </button>
+        </div>
+      </section>
+
+      {/* ── Contraseña ── */}
+      <section className="config-card">
+        <h3>Contraseña</h3>
+        <p className="config-hint">Necesitás tu contraseña actual para poder cambiarla.</p>
+
+        <div className="config-form">
+          <div className="config-field">
+            <label htmlFor="cfg-current">Contraseña actual</label>
+            <input
+              id="cfg-current"
+              type="password"
+              autoComplete="current-password"
+              value={current}
+              onChange={e => { setCurrent(e.target.value); setPassSaved(false) }}
+              disabled={savingPass}
+            />
+          </div>
+
+          <div className="config-grid">
+            <div className="config-field">
+              <label htmlFor="cfg-new">Nueva</label>
+              <input
+                id="cfg-new"
+                type="password"
+                autoComplete="new-password"
+                placeholder="Mínimo 8"
+                value={next}
+                onChange={e => { setNext(e.target.value); setPassSaved(false) }}
+                disabled={savingPass}
+                aria-invalid={tooShort}
+              />
+              {tooShort && (
+                <span className="config-field-hint">Te faltan {8 - next.length}</span>
+              )}
+            </div>
+
+            <div className="config-field">
+              <label htmlFor="cfg-confirm">Repetir</label>
+              <input
+                id="cfg-confirm"
+                type="password"
+                autoComplete="new-password"
+                value={confirm}
+                onChange={e => { setConfirm(e.target.value); setPassSaved(false) }}
+                disabled={savingPass}
+                aria-invalid={mismatch}
+              />
+              {mismatch && <span className="config-field-hint">No coinciden</span>}
+            </div>
+          </div>
+
+          {passError && <p className="config-msg is-error" role="alert">{passError}</p>}
+          {passSaved && <p className="config-msg is-ok" role="status">Contraseña actualizada</p>}
+
+          <button className="config-btn" onClick={savePassword} disabled={!canSavePass}>
+            {savingPass ? 'Guardando…' : 'Cambiar contraseña'}
+          </button>
+        </div>
+      </section>
+
+      {/* ── Preferencias ── */}
+      <section className="config-card">
+        <h3>Preferencias</h3>
+        <p className="config-hint">Se guardan en este dispositivo.</p>
+
+        <div className="config-row">
+          <div className="config-row-text">
+            <b>Moneda base</b>
+            <span>En qué moneda ver el total de tu billetera.</span>
+          </div>
+
+          <div className="config-chips" role="group" aria-label="Elegir moneda base">
+            {BASE_CURRENCIES.map(c => (
+              <button
+                key={c}
+                type="button"
+                onClick={() => { setBase(c); setBaseCurrency(c) }}
+                aria-pressed={base === c}
+                className={base === c ? 'is-active' : undefined}>
+                {c}
+              </button>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* ── Umbrales ── */}
+      <section className="config-card">
+        <h3>Umbrales de confirmación</h3>
+        <p className="config-hint">
           Las operaciones que superen estos montos no se ejecutan al instante:
           te enviamos un correo para que las confirmes.
         </p>
-      </div>
 
-      {loadError && (
-        <div role="alert" style={{ padding: '12px 14px', borderRadius: 10, background: 'rgba(226,112,95,0.1)', border: `1px solid ${C.danger}`, color: C.danger, fontFamily: 'Inter, sans-serif', fontSize: 13 }}>
-          {loadError}
-        </div>
-      )}
+        {!thresholds && !thError && <p className="config-loading">Cargando…</p>}
 
-      {!form && !loadError && (
-        <p style={{ fontFamily: 'Inter, sans-serif', fontSize: 14, color: C.muted }}>Cargando…</p>
-      )}
+        {thError && !thresholds && (
+          <p className="config-msg is-error" role="alert">{thError}</p>
+        )}
 
-      {form && (
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 20, background: C.card, border: `1px solid ${C.cardBorder}`, borderRadius: C.radius, padding: 24 }}>
-          {FIELDS.map(({ key, label, hint }) => {
-            const raw = parseFloat(form[key].replace(',', '.'))
-            const invalid = form[key] !== '' && (Number.isNaN(raw) || raw <= 0)
+        {thresholds && (
+          <div className="config-form">
+            <div className="config-grid">
+              {THRESHOLD_FIELDS.map(({ key, label, hint }) => {
+                const raw = parseFloat(thresholds[key].replace(',', '.'))
+                const invalid = thresholds[key] !== '' && (Number.isNaN(raw) || raw <= 0)
 
-            return (
-              <div key={key}>
-                <label htmlFor={`th-${key}`} style={labelStyle}>
-                  {label} <span style={{ color: C.mutedDark }}>· {hint}</span>
-                </label>
-                <input
-                  id={`th-${key}`}
-                  type="number"
-                  min="0"
-                  step="any"
-                  value={form[key]}
-                  onChange={e => setField(key, e.target.value)}
-                  style={{ ...fieldStyle, borderColor: invalid ? C.danger : C.cardBorder }}
-                />
-              </div>
-            )
-          })}
-
-          {error && (
-            <div role="alert" style={{ padding: '12px 14px', borderRadius: 10, background: 'rgba(226,112,95,0.1)', border: `1px solid ${C.danger}`, color: C.danger, fontFamily: 'Inter, sans-serif', fontSize: 13 }}>
-              {error}
+                return (
+                  <div className="config-field is-mono" key={key}>
+                    <label htmlFor={`cfg-th-${key}`}>
+                      {label} · {hint}
+                    </label>
+                    <input
+                      id={`cfg-th-${key}`}
+                      type="number"
+                      min="0"
+                      step="any"
+                      value={thresholds[key]}
+                      onChange={e => {
+                        setThresholds({ ...thresholds, [key]: e.target.value })
+                        setThSaved(false)
+                      }}
+                      aria-invalid={invalid}
+                    />
+                  </div>
+                )
+              })}
             </div>
-          )}
 
-          {saved && (
-            <div role="status" style={{ padding: '12px 14px', borderRadius: 10, background: 'rgba(242,212,136,0.08)', border: `1px solid ${C.cardBorder}`, color: C.gold, fontFamily: 'Inter, sans-serif', fontSize: 13 }}>
-              Umbrales guardados
-            </div>
-          )}
+            {thError && <p className="config-msg is-error" role="alert">{thError}</p>}
+            {thSaved && <p className="config-msg is-ok" role="status">Umbrales guardados</p>}
 
-          <button
-            onClick={handleSave}
-            disabled={!allValid || saving}
-            style={{
-              padding: '14px 0', borderRadius: 12, border: 'none',
-              background: !allValid || saving ? 'rgba(242,212,136,0.2)' : `linear-gradient(135deg, ${C.gold}, ${C.goldMid})`,
-              color: !allValid || saving ? C.mutedDark : '#161311',
-              fontFamily: 'Poppins, sans-serif', fontWeight: 700, fontSize: 15,
-              cursor: !allValid || saving ? 'not-allowed' : 'pointer',
-            }}>
-            {saving ? 'Guardando…' : 'Guardar cambios'}
-          </button>
-        </div>
-      )}
+            <button className="config-btn" onClick={saveThresholds} disabled={!thValid || savingTh}>
+              {savingTh ? 'Guardando…' : 'Guardar umbrales'}
+            </button>
+          </div>
+        )}
+      </section>
     </div>
   )
 }

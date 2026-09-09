@@ -1,5 +1,7 @@
 import { useEffect, useState } from 'react'
 import RateChart from '../../components/RateChart/RateChart'
+import { getAllRates } from '../../services/rates'
+import { getBaseCurrency } from '../../services/preferences'
 import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../../context/useAuth'
 import { api } from '../../services/api'
@@ -139,12 +141,33 @@ function Dashboard() {
     }
   }, [])
 
+  const baseCurrency = getBaseCurrency()
+
+  // Cuántas unidades de cada moneda equivalen a 1 USD. Con eso llevamos
+  // todos los saldos a la moneda base y los sumamos.
+  const [rates, setRates] = useState<Record<string, number> | null>(null)
+
+  useEffect(() => {
+    let cancelled = false
+
+    getAllRates()
+      .then(data => { if (!cancelled) setRates(data) })
+      .catch(() => { if (!cancelled) setRates(null) })
+
+    return () => { cancelled = true }
+  }, [])
+
+  const total = rates
+    ? balances.reduce((sum, b) => {
+        const rate = rates[b.currency]
+        if (!rate) return sum
+        // saldo -> dólares -> moneda base
+        return sum + (parseFloat(String(b.amount)) / rate) * (rates[baseCurrency] ?? 1)
+      }, 0)
+    : null
+
   const userName = user?.fullName || 'Usuario'
   const initial = userName.charAt(0).toUpperCase()
-
-  const usdBalance = balances.find(
-    (balance) => balance.currency === 'USD',
-  )
 
   return (
     <div className="dashboard">
@@ -165,15 +188,13 @@ function Dashboard() {
           <div className="balance-decoration balance-decoration-bottom" />
 
           <p className="dashboard-section-label">
-            Saldo en dólares
+            Total en {baseCurrency}
           </p>
 
           <h2>
-            {loadingBalances
+            {loadingBalances || total === null
               ? '—'
-              : usdBalance
-                ? `$ ${formatAmount('USD', usdBalance.amount)}`
-                : '$ 0,00'}
+              : `${formatAmount(baseCurrency, String(total))} ${baseCurrency}`}
           </h2>
         </section>
 

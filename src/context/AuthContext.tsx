@@ -57,6 +57,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     )
   }
 
+  async function refreshUser() {
+    const me = await api.get<ApiUser>('/users/me')
+    setUser(mapUser(me))
+  }
+
   function logout() {
     localStorage.removeItem(TOKEN_KEY)
     setUser(null)
@@ -64,7 +69,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   return (
     <AuthContext.Provider
-      value={{ user, loading, login, register, logout }}
+      value={{ user, loading, login, register, logout, refreshUser }}
     >
       {children}
     </AuthContext.Provider>

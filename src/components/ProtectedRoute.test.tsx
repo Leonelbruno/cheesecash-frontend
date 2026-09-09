@@ -13,6 +13,7 @@ function makeCtx(over: Partial<AuthContextType>): AuthContextType {
     login: noop,
     register: noop,
     logout: () => {},
+    refreshUser: noop,
     ...over,
   }
 }

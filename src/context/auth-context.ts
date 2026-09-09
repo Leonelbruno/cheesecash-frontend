@@ -23,6 +23,8 @@ export interface AuthContextType {
     birthDate: string,
   ) => Promise<void>
   logout: () => void
+  /** Vuelve a pedir el perfil al servidor. Se usa al editar los datos. */
+  refreshUser: () => Promise<void>
 }
 
 export const AuthContext = createContext<AuthContextType | null>(null)
