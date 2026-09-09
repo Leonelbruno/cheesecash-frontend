@@ -1,0 +1,300 @@
+.config {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  max-width: 620px;
+}
+
+.config-head h2 {
+  font-family: 'Poppins', sans-serif;
+  font-weight: 700;
+  font-size: 24px;
+  color: #f6efdf;
+  margin: 0;
+  letter-spacing: -0.02em;
+}
+
+.config-head p {
+  font-family: 'Inter', sans-serif;
+  font-size: 14px;
+  color: #9a927f;
+  margin: 4px 0 0;
+}
+
+/* ── Tarjetas ── */
+.config-card {
+  background: #141210;
+  border: 1px solid rgba(232, 196, 104, 0.14);
+  border-radius: 18px;
+  padding: 24px;
+}
+
+.config-card > h3 {
+  font-family: 'Poppins', sans-serif;
+  font-weight: 600;
+  font-size: 16px;
+  color: #f6efdf;
+  margin: 0 0 4px;
+}
+
+.config-card > p.config-hint {
+  font-family: 'Inter', sans-serif;
+  font-size: 13.5px;
+  color: #9a927f;
+  margin: 0 0 18px;
+  line-height: 1.5;
+}
+
+/* ── Identidad ── */
+.config-identity {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding-bottom: 20px;
+  margin-bottom: 20px;
+  border-bottom: 1px solid rgba(232, 196, 104, 0.14);
+}
+
+.config-avatar {
+  width: 56px;
+  height: 56px;
+  flex: none;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(135deg, #f2d488, #d9a942);
+  color: #161311;
+  font-family: 'Poppins', sans-serif;
+  font-weight: 800;
+  font-size: 22px;
+}
+
+.config-identity-text {
+  min-width: 0;
+}
+
+.config-identity-text b {
+  display: block;
+  font-family: 'Poppins', sans-serif;
+  font-weight: 700;
+  font-size: 18px;
+  color: #f6efdf;
+}
+
+.config-identity-text span {
+  display: inline-block;
+  margin-top: 5px;
+  padding: 3px 10px;
+  border-radius: 20px;
+  background: rgba(242, 212, 136, 0.12);
+  border: 1px solid rgba(242, 212, 136, 0.3);
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px;
+  letter-spacing: 2px;
+  color: #f2d488;
+}
+
+/* ── Datos en solo lectura ── */
+.config-facts {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 12px;
+}
+
+.config-fact {
+  background: #0f0d0b;
+  border: 1px solid rgba(232, 196, 104, 0.1);
+  border-radius: 12px;
+  padding: 14px 16px;
+}
+
+.config-fact dt {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 9.5px;
+  text-transform: uppercase;
+  letter-spacing: 2.5px;
+  color: #645d51;
+  margin: 0 0 6px;
+}
+
+.config-fact dd {
+  margin: 0;
+  font-family: 'Inter', sans-serif;
+  font-size: 14px;
+  color: #f6efdf;
+  word-break: break-all;
+}
+
+.config-fact dd.is-ok {
+  color: #7fc79a;
+}
+
+/* ── Formularios ── */
+.config-form {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.config-field label {
+  display: block;
+  margin-bottom: 6px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 3px;
+  color: #9a927f;
+}
+
+.config-field input {
+  width: 100%;
+  box-sizing: border-box;
+  padding: 12px 14px;
+  background: #0f0d0b;
+  border: 1px solid rgba(232, 196, 104, 0.14);
+  border-radius: 10px;
+  color: #f6efdf;
+  font-family: 'Inter', sans-serif;
+  font-size: 14px;
+  outline: none;
+  transition: border-color 0.18s;
+}
+
+.config-field input:focus {
+  border-color: rgba(242, 212, 136, 0.5);
+}
+
+.config-field input[aria-invalid='true'] {
+  border-color: #e2705f;
+}
+
+.config-field input:disabled {
+  opacity: 0.6;
+}
+
+.config-field.is-mono input {
+  font-family: 'JetBrains Mono', monospace;
+}
+
+.config-field-hint {
+  display: block;
+  margin-top: 6px;
+  font-family: 'Inter', sans-serif;
+  font-size: 12px;
+  color: #e2705f;
+}
+
+.config-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+  gap: 14px;
+}
+
+/* ── Chips ── */
+.config-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.config-row-text b {
+  display: block;
+  font-family: 'Poppins', sans-serif;
+  font-weight: 600;
+  font-size: 14.5px;
+  color: #f6efdf;
+}
+
+.config-row-text span {
+  display: block;
+  margin-top: 3px;
+  font-family: 'Inter', sans-serif;
+  font-size: 13px;
+  color: #9a927f;
+}
+
+.config-chips {
+  display: flex;
+  gap: 6px;
+  flex: none;
+}
+
+.config-chips button {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11.5px;
+  letter-spacing: 1px;
+  padding: 7px 14px;
+  border-radius: 8px;
+  border: 1px solid rgba(232, 196, 104, 0.14);
+  background: transparent;
+  color: #9a927f;
+  cursor: pointer;
+  transition: 0.18s;
+}
+
+.config-chips button:hover {
+  color: #f6efdf;
+}
+
+.config-chips button.is-active {
+  background: rgba(242, 212, 136, 0.12);
+  border-color: #f2d488;
+  color: #f2d488;
+  font-weight: 700;
+}
+
+/* ── Mensajes y acciones ── */
+.config-msg {
+  margin: 0;
+  padding: 11px 14px;
+  border-radius: 10px;
+  font-family: 'Inter', sans-serif;
+  font-size: 13px;
+}
+
+.config-msg.is-error {
+  background: rgba(226, 112, 95, 0.1);
+  border: 1px solid #e2705f;
+  color: #e2705f;
+}
+
+.config-msg.is-ok {
+  background: rgba(242, 212, 136, 0.08);
+  border: 1px solid rgba(232, 196, 104, 0.3);
+  color: #f2d488;
+}
+
+.config-btn {
+  align-self: flex-start;
+  padding: 12px 26px;
+  border: none;
+  border-radius: 11px;
+  background: linear-gradient(135deg, #f2d488, #d9a942);
+  color: #161311;
+  font-family: 'Poppins', sans-serif;
+  font-weight: 700;
+  font-size: 14.5px;
+  cursor: pointer;
+}
+
+.config-btn:disabled {
+  background: rgba(242, 212, 136, 0.2);
+  color: #5c584c;
+  cursor: not-allowed;
+}
+
+.config-btn:focus-visible,
+.config-chips button:focus-visible,
+.config-field input:focus-visible {
+  outline: 2px solid #f2d488;
+  outline-offset: 2px;
+}
+
+.config-loading {
+  font-family: 'Inter', sans-serif;
+  font-size: 14px;
+  color: #9a927f;
+}
