@@ -59,7 +59,7 @@ export default function Configuracion() {
   // Vive en la cuenta, así que sale del perfil y se guarda contra la API.
   const [savingBase, setSavingBase] = useState(false)
   const [baseError, setBaseError] = useState('')
-  const base = user?.baseCurrency ?? 'USD'
+  const base = user?.baseCurrency ?? 'ARS'
 
   async function changeBase(currency: BaseCurrency) {
     if (currency === base || savingBase) return

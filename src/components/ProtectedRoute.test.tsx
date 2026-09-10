@@ -35,7 +35,7 @@ function renderAt(path: string, ctx: AuthContextType) {
   )
 }
 
-const usuario = { id: 1, email: 'gonza@test.com', fullName: 'Gonzalo', baseCurrency: 'USD' as const }
+const usuario = { id: 1, email: 'gonza@test.com', fullName: 'Gonzalo', baseCurrency: 'ARS' as const }
 
 describe('ProtectedRoute', () => {
   it('manda al login cuando no hay sesión', () => {

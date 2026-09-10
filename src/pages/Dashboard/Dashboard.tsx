@@ -158,7 +158,7 @@ function Dashboard() {
     }
   }, [])
 
-  const baseCurrency = user?.baseCurrency ?? 'USD'
+  const baseCurrency = user?.baseCurrency ?? 'ARS'
 
   // Cuántas unidades de cada moneda equivalen a 1 USD. Con eso llevamos
   // todos los saldos a la moneda base y los sumamos.
@@ -237,9 +237,6 @@ function Dashboard() {
           {!loadingBalances && !balancesError && (
             <div className="currency-grid">
               {balances
-                .filter(
-                  (balance) => balance.currency !== 'USD',
-                )
                 .map((balance) => {
                   const meta =
                     CURRENCY_META[balance.currency]
