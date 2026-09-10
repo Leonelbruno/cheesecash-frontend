@@ -2,6 +2,8 @@
 
 Billetera digital multimoneda. Permite gestionar saldos en ARS, USD, EUR y BTC con operaciones de compra, venta, intercambio y transferencia entre usuarios.
 
+🌐 **App en producción:** [cheesecash-frontend.vercel.app](https://cheesecash-frontend.vercel.app)
+
 ---
 
 ## Índice
@@ -13,6 +15,7 @@ Billetera digital multimoneda. Permite gestionar saldos en ARS, USD, EUR y BTC c
 - [Backend](#backend)
 - [Scripts](#scripts)
 - [Estructura del proyecto](#estructura-del-proyecto)
+- [Funcionalidades](#funcionalidades)
 - [Decisiones técnicas](#decisiones-técnicas)
 - [Equipo](#equipo)
 
@@ -24,6 +27,8 @@ Billetera digital multimoneda. Permite gestionar saldos en ARS, USD, EUR y BTC c
 - **React Router v7** — navegación SPA con rutas protegidas
 - **CSS propio** — sin frameworks, sistema de tokens de diseño dark/gold
 - **JWT** — autenticación stateless con el backend
+- **Socket.io** — notificaciones en tiempo real
+- **Vercel** + **GitHub Actions** — deploy continuo con CI automático en cada PR
 
 ---
 
@@ -39,8 +44,8 @@ Billetera digital multimoneda. Permite gestionar saldos en ARS, USD, EUR y BTC c
 
 ```bash
 # 1. Clonar el repo
-git clone https://github.com/valenberdev/cheesecash-front.git
-cd cheesecash-front
+git clone https://github.com/Leonelbruno/cheesecash-frontend.git
+cd cheesecash-frontend
 
 # 2. Instalar dependencias
 npm install
@@ -87,6 +92,7 @@ npm run dev      # Servidor de desarrollo
 npm run build    # Build de producción
 npm run preview  # Preview del build
 npm run lint     # Linter
+npm run test     # Tests con Vitest
 ```
 
 ---
@@ -98,6 +104,7 @@ src/
 ├── components/
 │   ├── ChatBot/        # Chatbot flotante y arrastrable
 │   ├── Layout/         # Sidebar (desktop) + bottom nav (mobile)
+│   ├── RateChart/      # Gráfico de cotizaciones en tiempo real
 │   ├── ProtectedRoute/ # Guards de rutas autenticadas/públicas
 │   └── Toast/          # Notificaciones
 ├── context/
@@ -105,15 +112,43 @@ src/
 │   └── auth-context.ts  # Tipos e interfaz del contexto
 ├── pages/
 │   ├── Auth/           # Login + Registro (tabs)
-│   ├── Dashboard/      # Panel principal con saldos
+│   ├── Dashboard/      # Panel principal con saldos y movimientos
 │   ├── Operar/         # Compra, venta e intercambio
-│   ├── Historial/      # Historial de transacciones
-│   ├── Conversor/      # Conversor de monedas
-│   ├── Transferir/     # Transferencias a contactos
-│   └── Landing/        # Landing page pública
+│   ├── Historial/      # Historial filtrable de transacciones
+│   ├── Conversor/      # Conversor de monedas informativo
+│   ├── Transferir/     # Transferencias por PIN con confirmación
+│   ├── Recargar/       # Recarga de saldo (Sprint 2)
+│   ├── Configuracion/  # Ajustes de cuenta
+│   ├── ForgotPassword/ # Recuperar contraseña
+│   └── Landing/        # Landing page pública con gráfico en vivo
 └── services/
-    └── api.ts          # Cliente fetch con Authorization header
+    ├── api.ts          # Cliente fetch con Authorization header
+    └── rates.ts        # Fetching de cotizaciones y historial
 ```
+
+---
+
+## Funcionalidades
+
+### Sprint 1
+- Registro y login con JWT
+- Dashboard con saldos en 4 monedas (ARS, USD, EUR, BTC)
+- Operar: comprar, vender e intercambiar monedas
+- Transferir saldo a otro usuario por PIN
+- Historial de transacciones filtrable por tipo
+- Conversor de monedas con tasas reales
+- Chatbot flotante y arrastrable (Pointer Events API)
+- Landing page con cotizaciones en vivo y conversor
+
+### Sprint 2
+- **Recargar saldo** — nueva pantalla con montos rápidos predefinidos
+- **Gráfico de cotizaciones en tiempo real** — evolución de precios con selector de par y período (7D / 30D / 90D), actualización automática cada 30 segundos
+- **Animación en mobile** — panel animado visible en el login mobile via `backdrop-filter`
+- **Notificaciones en tiempo real** — toasts via Socket.io al recibir transferencias
+- **Recuperar contraseña** — flujo completo de reset por email
+- **Confirmación en transferencias** — pantalla de resumen antes de ejecutar
+- **CI con GitHub Actions** — análisis automático en cada PR antes de mergear a main
+- **Historial de recargas** — los depósitos aparecen en el dashboard y el historial
 
 ---
 
@@ -123,9 +158,13 @@ src/
 
 **Autenticación:** el token JWT se guarda en `localStorage` bajo la clave `cc_token`. Se envía en el header `Authorization: Bearer <token>` en cada request al backend.
 
-**Diseño responsive:** en desktop se muestra la sidebar lateral. En mobile (≤768px) se oculta la sidebar y aparece una barra de navegación en la parte inferior, similar a Mercado Pago o NaranjaX.
+**6 pares directos:** las cotizaciones se fetchean con `Promise.all` para los 6 pares directos entre monedas (sin cross-rates calculados), garantizando valores idénticos en toda la app. Antes había hasta 36 ARS de diferencia entre la sección de cotizaciones y el conversor.
 
-**Sin Tailwind:** se usa CSS propio con variables de diseño definidas una vez y reutilizadas en toda la app:
+**DOM directo para drag:** el chatbot usa la Pointer Events API manipulando el DOM directamente durante el arrastre, sin pasar por el estado de React. Esto evita re-renders en cada pixel movido, que frenaba el botón en mobile.
+
+**Diseño responsive:** en desktop se muestra la sidebar lateral. En mobile (≤768px) se oculta la sidebar y aparece una barra de navegación inferior con los 5 flujos más usados.
+
+**Sin Tailwind:** CSS propio con variables de diseño reutilizadas en toda la app:
 ```css
 --gold: #f2d488;
 --bg:   #0a0908;
@@ -135,8 +174,6 @@ src/
 ---
 
 ## Equipo
-
-**One Team:**
 
 - Jeremias Bustos
 - Valentino Berdini
