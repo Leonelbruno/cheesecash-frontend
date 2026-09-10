@@ -22,7 +22,7 @@ const thresholds = {
 const refreshUser = vi.fn().mockResolvedValue(undefined)
 
 const ctx: AuthContextType = {
-  user: { id: 1, email: 'gonza@test.com', fullName: 'Gonzalo Bastias', baseCurrency: 'USD' },
+  user: { id: 1, email: 'gonza@test.com', fullName: 'Gonzalo Bastias', baseCurrency: 'ARS' },
   loading: false,
   login: async () => {},
   register: async () => {},
@@ -80,7 +80,7 @@ describe('Configuracion', () => {
 
     expect(mockPut).toHaveBeenCalledWith('/users/me', {
       fullName: 'Gonzalo B',
-      baseCurrency: 'USD',
+      baseCurrency: 'ARS',
     })
     expect(refreshUser).toHaveBeenCalled()
   })
@@ -145,11 +145,11 @@ describe('Configuracion', () => {
     await screen.findByText('gonza@test.com')
 
     const grupo = screen.getByRole('group', { name: /moneda base/i })
-    await userEvent.click(within(grupo).getByRole('button', { name: 'ARS' }))
+    await userEvent.click(within(grupo).getByRole('button', { name: 'USD' }))
 
     expect(mockPut).toHaveBeenCalledWith('/users/me', {
       fullName: 'Gonzalo Bastias',
-      baseCurrency: 'ARS',
+      baseCurrency: 'USD',
     })
     expect(refreshUser).toHaveBeenCalled()
   })
@@ -159,7 +159,7 @@ describe('Configuracion', () => {
     await screen.findByText('gonza@test.com')
 
     const grupo = screen.getByRole('group', { name: /moneda base/i })
-    await userEvent.click(within(grupo).getByRole('button', { name: 'USD' }))
+    await userEvent.click(within(grupo).getByRole('button', { name: 'ARS' }))
 
     expect(mockPut).not.toHaveBeenCalled()
   })

@@ -15,9 +15,11 @@ function mapUser(u: ApiUser): User {
     id: u.id,
     email: u.email,
     fullName: u.full_name,
+    // ARS es el valor por defecto de la columna en el backend. Si acá
+    // pusiéramos otro, la pantalla parpadearía al cargar el perfil.
     baseCurrency: BASE_CURRENCIES.includes(u.base_currency as BaseCurrency)
       ? (u.base_currency as BaseCurrency)
-      : 'USD',
+      : 'ARS',
   }
 }
 
