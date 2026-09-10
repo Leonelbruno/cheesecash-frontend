@@ -22,7 +22,7 @@ const thresholds = {
 const refreshUser = vi.fn().mockResolvedValue(undefined)
 
 const ctx: AuthContextType = {
-  user: { id: 1, email: 'gonza@test.com', fullName: 'Gonzalo Bastias' },
+  user: { id: 1, email: 'gonza@test.com', fullName: 'Gonzalo Bastias', baseCurrency: 'USD' },
   loading: false,
   login: async () => {},
   register: async () => {},
@@ -78,7 +78,10 @@ describe('Configuracion', () => {
     await userEvent.type(input, 'Gonzalo B')
     await userEvent.click(screen.getByRole('button', { name: /guardar nombre/i }))
 
-    expect(mockPut).toHaveBeenCalledWith('/users/me', { fullName: 'Gonzalo B' })
+    expect(mockPut).toHaveBeenCalledWith('/users/me', {
+      fullName: 'Gonzalo B',
+      baseCurrency: 'USD',
+    })
     expect(refreshUser).toHaveBeenCalled()
   })
 
@@ -137,14 +140,28 @@ describe('Configuracion', () => {
   })
 
   // ── Moneda base ──
-  it('guarda la moneda base en el dispositivo', async () => {
+  it('guarda la moneda base en la cuenta, no en el navegador', async () => {
     renderConfig()
     await screen.findByText('gonza@test.com')
 
     const grupo = screen.getByRole('group', { name: /moneda base/i })
     await userEvent.click(within(grupo).getByRole('button', { name: 'ARS' }))
 
-    expect(localStorage.getItem('cc_base_currency')).toBe('ARS')
+    expect(mockPut).toHaveBeenCalledWith('/users/me', {
+      fullName: 'Gonzalo Bastias',
+      baseCurrency: 'ARS',
+    })
+    expect(refreshUser).toHaveBeenCalled()
+  })
+
+  it('no llama al servidor si se elige la moneda que ya estaba', async () => {
+    renderConfig()
+    await screen.findByText('gonza@test.com')
+
+    const grupo = screen.getByRole('group', { name: /moneda base/i })
+    await userEvent.click(within(grupo).getByRole('button', { name: 'USD' }))
+
+    expect(mockPut).not.toHaveBeenCalled()
   })
 
   // ── Umbrales ──

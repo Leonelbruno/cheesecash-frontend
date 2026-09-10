@@ -1,12 +1,7 @@
 import { useEffect, useState } from 'react'
 import { api } from '../../services/api'
 import { useAuth } from '../../context/useAuth'
-import {
-  BASE_CURRENCIES,
-  getBaseCurrency,
-  setBaseCurrency,
-  type BaseCurrency,
-} from '../../services/preferences'
+import { BASE_CURRENCIES, type BaseCurrency } from '../../context/auth-context'
 import './Configuracion.css'
 
 /** Lo que devuelve GET /users/me/thresholds (columnas de la base). */
@@ -61,7 +56,30 @@ export default function Configuracion() {
   const [passSaved, setPassSaved] = useState(false)
 
   // ── Moneda base ──
-  const [base, setBase] = useState<BaseCurrency>(getBaseCurrency)
+  // Vive en la cuenta, así que sale del perfil y se guarda contra la API.
+  const [savingBase, setSavingBase] = useState(false)
+  const [baseError, setBaseError] = useState('')
+  const base = user?.baseCurrency ?? 'USD'
+
+  async function changeBase(currency: BaseCurrency) {
+    if (currency === base || savingBase) return
+    setSavingBase(true)
+    setBaseError('')
+
+    try {
+      // El backend pide los dos campos juntos, así que mandamos el
+      // nombre vigente aunque no lo estemos cambiando.
+      await api.put('/users/me', {
+        fullName: user?.fullName ?? '',
+        baseCurrency: currency,
+      })
+      await refreshUser()
+    } catch (err) {
+      setBaseError(err instanceof Error ? err.message : 'No pudimos guardar la moneda')
+    } finally {
+      setSavingBase(false)
+    }
+  }
 
   // ── Umbrales ──
   const [thresholds, setThresholds] = useState<ThresholdForm | null>(null)
@@ -111,7 +129,10 @@ export default function Configuracion() {
     setNameError('')
 
     try {
-      await api.put('/users/me', { fullName: name.trim() })
+      await api.put('/users/me', {
+        fullName: name.trim(),
+        baseCurrency: base,
+      })
       await refreshUser()
       setNameDraft(null)
       setNameSaved(true)
@@ -303,7 +324,7 @@ export default function Configuracion() {
       {/* ── Preferencias ── */}
       <section className="config-card">
         <h3>Preferencias</h3>
-        <p className="config-hint">Se guardan en este dispositivo.</p>
+        <p className="config-hint">Se guardan en tu cuenta.</p>
 
         <div className="config-row">
           <div className="config-row-text">
@@ -316,7 +337,8 @@ export default function Configuracion() {
               <button
                 key={c}
                 type="button"
-                onClick={() => { setBase(c); setBaseCurrency(c) }}
+                onClick={() => changeBase(c)}
+                disabled={savingBase}
                 aria-pressed={base === c}
                 className={base === c ? 'is-active' : undefined}>
                 {c}
@@ -324,6 +346,12 @@ export default function Configuracion() {
             ))}
           </div>
         </div>
+
+        {baseError && (
+          <p className="config-msg is-error" role="alert" style={{ marginTop: 14 }}>
+            {baseError}
+          </p>
+        )}
       </section>
 
       {/* ── Umbrales ── */}
