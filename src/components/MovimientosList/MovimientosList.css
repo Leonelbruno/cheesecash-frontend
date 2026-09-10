@@ -1,0 +1,38 @@
+.movement-card {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 16px 20px;
+}
+
+.movement-amount {
+  text-align: right;
+  flex-shrink: 0;
+}
+
+@media (max-width: 768px) {
+  .movement-card {
+    display: grid;
+    grid-template-columns: 40px minmax(0, 1fr);
+    grid-template-areas:
+      "icon info"
+      "amount amount";
+    gap: 10px 12px;
+    padding: 14px 16px;
+  }
+
+  .movement-icon {
+    grid-area: icon;
+  }
+
+  .movement-info {
+    grid-area: info;
+  }
+
+  .movement-amount {
+    grid-area: amount;
+    width: 100%;
+    text-align: right;
+    padding-top: 4px;
+  }
+}

@@ -1,3 +1,4 @@
+import './MovimientosList.css'
 /**
  * MovimientosList — componente reutilizable para mostrar un listado de movimientos.
  * Usado en Historial y puede usarse en Dashboard u otras pantallas.
@@ -465,18 +466,16 @@ export default function MovimientosList({
 
           return (
             <div
+              className="movement-card"
               key={`${item.kind}-${String(item.id)}`}
               style={{
-                display: 'flex',
-                alignItems: 'center',
-                gap: 16,
-                padding: '16px 20px',
                 background: C.card,
                 border: `1px solid ${C.cardBorder}`,
                 borderRadius: 14,
               }}
             >
               <div
+                className="movement-icon"
                 style={{
                   width: 40,
                   height: 40,
@@ -499,6 +498,7 @@ export default function MovimientosList({
               </div>
 
               <div
+                className="movement-info"
                 style={{
                   flex: 1,
                   minWidth: 0,
@@ -536,7 +536,7 @@ export default function MovimientosList({
 
                   {isTransfer &&
                     transferStatus ===
-                      'pending' && (
+                    'pending' && (
                       <span
                         style={{
                           fontFamily:
@@ -555,7 +555,7 @@ export default function MovimientosList({
 
                   {isTransfer &&
                     transferStatus ===
-                      'failed' && (
+                    'failed' && (
                       <span
                         style={{
                           fontFamily:
@@ -594,12 +594,7 @@ export default function MovimientosList({
                 </div>
               </div>
 
-              <div
-                style={{
-                  textAlign: 'right',
-                  flexShrink: 0,
-                }}
-              >
+              <div className="movement-amount">
                 {isTransfer || isDeposit ? (
                   <div
                     style={{
@@ -635,9 +630,9 @@ export default function MovimientosList({
                     >
                       {toAmt
                         ? `${formatAmount(
-                            toAmt,
-                            toCur,
-                          )} ${toCur}`
+                          toAmt,
+                          toCur,
+                        )} ${toCur}`
                         : ''}
                     </div>
 
@@ -651,9 +646,9 @@ export default function MovimientosList({
                     >
                       {fromAmt
                         ? `${formatAmount(
-                            fromAmt,
-                            fromCur,
-                          )} ${fromCur}`
+                          fromAmt,
+                          fromCur,
+                        )} ${fromCur}`
                         : ''}
                     </div>
                   </>
