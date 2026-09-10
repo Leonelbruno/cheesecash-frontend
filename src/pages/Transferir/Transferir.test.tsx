@@ -37,6 +37,9 @@ describe('Transferir', () => {
     mockGet.mockImplementation((path: string) => {
       if (path === '/wallet/balances') return Promise.resolve(balances)
       if (path === '/users/me/pin') return Promise.resolve({ pin: 'A1B2C3' })
+      if (path.startsWith('/users/lookup')) {
+        return Promise.resolve({ fullName: 'Jeremías Bustos' })
+      }
       return Promise.reject(new Error(`sin stub para ${path}`))
     })
   })
@@ -201,6 +204,9 @@ describe('Transferir', () => {
         return Promise.resolve([{ id: 1, wallet_id: 1, currency: 'ARS', amount: '0.00' }])
       }
       if (path === '/users/me/pin') return Promise.resolve({ pin: 'A1B2C3' })
+      if (path.startsWith('/users/lookup')) {
+        return Promise.resolve({ fullName: 'Jeremías Bustos' })
+      }
       return Promise.reject(new Error(`sin stub para ${path}`))
     })
 
@@ -259,5 +265,47 @@ describe('Transferir', () => {
     await userEvent.click(botonRevisar())
 
     expect(screen.getByText('PIN Z9Y8X7')).toBeInTheDocument()
+  })
+
+  it('el resumen muestra el nombre del titular del PIN', async () => {
+    renderT()
+    await screen.findByText(/disponible/i)
+
+    await userEvent.click(screen.getByRole('button', { name: 'PIN' }))
+    await userEvent.type(screen.getByLabelText(/pin del destinatario/i), 'z9y8x7')
+    await userEvent.type(screen.getByLabelText('Monto'), '1000')
+    await userEvent.click(botonRevisar())
+
+    expect(await screen.findByText('Jeremías Bustos')).toBeInTheDocument()
+    expect(mockGet).toHaveBeenCalledWith('/users/lookup?pin=Z9Y8X7')
+  })
+
+  it('avisa si el PIN no corresponde a ninguna cuenta', async () => {
+    mockGet.mockImplementation((path: string) => {
+      if (path === '/wallet/balances') return Promise.resolve(balances)
+      if (path === '/users/me/pin') return Promise.resolve({ pin: 'A1B2C3' })
+      return Promise.reject(new Error('No se encontró ningún usuario con ese PIN'))
+    })
+
+    renderT()
+    await screen.findByText(/disponible/i)
+
+    await userEvent.click(screen.getByRole('button', { name: 'PIN' }))
+    await userEvent.type(screen.getByLabelText(/pin del destinatario/i), 'zzzzzz')
+    await userEvent.type(screen.getByLabelText('Monto'), '1000')
+    await userEvent.click(botonRevisar())
+
+    expect(await screen.findByText(/no encontramos una cuenta con ese pin/i)).toBeInTheDocument()
+  })
+
+  it('en modo email no consulta el lookup', async () => {
+    renderT()
+    await screen.findByText(/disponible/i)
+
+    await userEvent.type(screen.getByLabelText(/email del destinatario/i), 'jere@test.com')
+    await userEvent.type(screen.getByLabelText('Monto'), '1000')
+    await userEvent.click(botonRevisar())
+
+    expect(mockGet).not.toHaveBeenCalledWith(expect.stringContaining('/users/lookup'))
   })
 })

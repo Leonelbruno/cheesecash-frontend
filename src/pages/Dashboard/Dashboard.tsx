@@ -1,7 +1,6 @@
 import { useEffect, useState } from 'react'
 import RateChart from '../../components/RateChart/RateChart'
 import { getAllRates } from '../../services/rates'
-import { getBaseCurrency } from '../../services/preferences'
 import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../../context/useAuth'
 import { api } from '../../services/api'
@@ -159,7 +158,7 @@ function Dashboard() {
     }
   }, [])
 
-  const baseCurrency = getBaseCurrency()
+  const baseCurrency = user?.baseCurrency ?? 'USD'
 
   // Cuántas unidades de cada moneda equivalen a 1 USD. Con eso llevamos
   // todos los saldos a la moneda base y los sumamos.

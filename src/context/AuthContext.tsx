@@ -1,11 +1,24 @@
 import { useEffect, useState } from 'react'
 import { api } from '../services/api'
-import { AuthContext, type User, type ApiUser } from './auth-context'
+import {
+  AuthContext,
+  BASE_CURRENCIES,
+  type ApiUser,
+  type BaseCurrency,
+  type User,
+} from './auth-context'
 
 const TOKEN_KEY = 'cc_token'
 
 function mapUser(u: ApiUser): User {
-  return { id: u.id, email: u.email, fullName: u.full_name }
+  return {
+    id: u.id,
+    email: u.email,
+    fullName: u.full_name,
+    baseCurrency: BASE_CURRENCIES.includes(u.base_currency as BaseCurrency)
+      ? (u.base_currency as BaseCurrency)
+      : 'USD',
+  }
 }
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {

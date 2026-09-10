@@ -4,12 +4,18 @@ export interface ApiUser {
   id: number
   email: string
   full_name: string
+  base_currency?: string
 }
+
+export const BASE_CURRENCIES = ['ARS', 'USD', 'EUR'] as const
+export type BaseCurrency = (typeof BASE_CURRENCIES)[number]
 
 export interface User {
   id: number
   email: string
   fullName: string
+  /** En qué moneda se muestra el total consolidado. Vive en la cuenta. */
+  baseCurrency: BaseCurrency
 }
 
 export interface AuthContextType {

@@ -56,6 +56,10 @@ export default function Transferir() {
   const [pinCopied, setPinCopied] = useState(false)
   const [balances, setBalances] = useState<ApiBalance[]>([])
   const [confirming, setConfirming] = useState(false)
+  // Nombre del titular del PIN. Solo se pide al abrir el resumen, para no
+  // consultar en cada tecla ni exponer el endpoint más de lo necesario.
+  const [payeeName, setPayeeName] = useState<string | null>(null)
+  const [lookingUp, setLookingUp] = useState(false)
   const [submitting, setSubmitting] = useState(false)
   const [error, setError] = useState('')
   const [result, setResult] = useState<ApiTransfer | null>(null)
@@ -98,7 +102,17 @@ export default function Transferir() {
   function askConfirmation() {
     if (!canSubmit) return
     setError('')
+    setPayeeName(null)
     setConfirming(true)
+
+    if (mode !== 'pin') return
+
+    setLookingUp(true)
+    api
+      .get<{ fullName: string }>(`/users/lookup?pin=${toPin.trim().toUpperCase()}`)
+      .then(data => setPayeeName(data.fullName))
+      .catch(() => setPayeeName(null))
+      .finally(() => setLookingUp(false))
   }
 
   async function handleSubmit() {
@@ -155,6 +169,20 @@ export default function Transferir() {
             <div style={{ fontFamily: mode === 'email' ? 'Inter, sans-serif' : 'JetBrains Mono, monospace', fontSize: 15, color: C.text, wordBreak: 'break-all' }}>
               {destino}
             </div>
+
+            {mode === 'pin' && (
+              <div style={{ marginTop: 5, fontFamily: 'Inter, sans-serif', fontSize: 14 }}>
+                {lookingUp && <span style={{ color: C.mutedDark }}>Buscando titular…</span>}
+                {!lookingUp && payeeName && (
+                  <span style={{ color: C.gold, fontWeight: 500 }}>{payeeName}</span>
+                )}
+                {!lookingUp && !payeeName && (
+                  <span style={{ color: C.danger }}>
+                    No encontramos una cuenta con ese PIN
+                  </span>
+                )}
+              </div>
+            )}
           </div>
 
           <div style={{ height: 1, background: C.cardBorder }} />
