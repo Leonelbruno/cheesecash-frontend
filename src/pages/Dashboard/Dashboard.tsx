@@ -14,6 +14,7 @@ import {
   ShoppingBag,
   ArrowUpFromLine,
   ArrowLeftRight,
+  Calculator,
 } from 'lucide-react'
 
 interface ApiBalance {
@@ -33,9 +34,26 @@ const CURRENCY_META: Record<string, { symbol: string; name: string }> = {
 }
 
 const quickActions = [
-  { label: 'Comprar', icon: ShoppingBag, mode: 'comprar' },
-  { label: 'Vender', icon: ArrowUpFromLine, mode: 'vender' },
-  { label: 'Intercambiar', icon: ArrowLeftRight, mode: 'intercambiar' },
+  {
+    label: 'Comprar',
+    icon: ShoppingBag,
+    to: '/operar?modo=comprar',
+  },
+  {
+    label: 'Vender',
+    icon: ArrowUpFromLine,
+    to: '/operar?modo=vender',
+  },
+  {
+    label: 'Intercambiar',
+    icon: ArrowLeftRight,
+    to: '/operar?modo=intercambiar',
+  },
+  {
+    label: 'Conversor',
+    icon: Calculator,
+    to: '/conversor',
+  },
 ]
 
 function formatAmount(currency: string, amount: string) {
@@ -159,11 +177,11 @@ function Dashboard() {
 
   const total = rates
     ? balances.reduce((sum, b) => {
-        const rate = rates[b.currency]
-        if (!rate) return sum
-        // saldo -> dólares -> moneda base
-        return sum + (parseFloat(String(b.amount)) / rate) * (rates[baseCurrency] ?? 1)
-      }, 0)
+      const rate = rates[b.currency]
+      if (!rate) return sum
+      // saldo -> dólares -> moneda base
+      return sum + (parseFloat(String(b.amount)) / rate) * (rates[baseCurrency] ?? 1)
+    }, 0)
     : null
 
   const userName = user?.fullName || 'Usuario'
@@ -273,7 +291,7 @@ function Dashboard() {
                 <button
                   className="quick-action"
                   key={action.label}
-                  onClick={() => navigate(`/operar?modo=${action.mode}`)}
+                  onClick={() => navigate(action.to)}
                 >
                   <Icon size={24} />
                   <strong>{action.label}</strong>

@@ -139,11 +139,17 @@
   position: relative;
   z-index: 1;
 
+  width: 100%;
+  max-width: 100%;
   margin: 0;
 
   color: var(--dashboard-gold);
   font-family: "DM Mono", monospace;
-  font-size: clamp(2rem, 8vw, 2.7rem);
+  font-size: clamp(1.4rem, 6vw, 2.7rem);
+  line-height: 1.15;
+
+  overflow-wrap: anywhere;
+  word-break: break-word;
 }
 
 .balance-update {
@@ -280,27 +286,18 @@
 /* ---------- QUICK ACTIONS ---------- */
 
 .quick-actions {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 12px;
   width: 100%;
-  min-width: 0;
-
-  display: flex;
-  gap: 0.65rem;
-
-  overflow-x: auto;
-  padding-bottom: 0.3rem;
-
-  scrollbar-width: none;
-}
-
-.quick-actions::-webkit-scrollbar {
-  display: none;
 }
 
 .quick-action {
-  min-width: 76px;
+  width: 100%;
+  min-width: 0;
   min-height: 88px;
-
   padding: 0.8rem 0.45rem;
+  box-sizing: border-box;
 
   border: 1px solid var(--dashboard-border);
   border-radius: 0.75rem;
@@ -315,6 +312,16 @@
   gap: 0.5rem;
 
   cursor: pointer;
+}
+
+.quick-action strong {
+  white-space: nowrap;
+  text-align: center;
+}
+@media (max-width: 768px) {
+  .quick-actions {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
 }
 
 /* ---------- TRANSACTIONS ---------- */
@@ -490,6 +497,7 @@
   }
 
   .currency-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
     gap: 0.8rem;
   }
 
@@ -502,11 +510,12 @@
     min-width: 0;
 
     display: grid;
-    grid-template-columns: repeat(3, minmax(0, 1fr));
+    grid-template-columns: repeat(4, minmax(0, 1fr));
     gap: 0.65rem;
 
     overflow: visible;
   }
+
   .quick-action {
     width: 100%;
     min-width: 0;
